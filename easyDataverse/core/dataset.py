@@ -330,7 +330,7 @@ class Dataset(BaseModel):
         # Break down the URL and gather doi and target url
         # Example: https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/darus-2469
 
-        doi = url.split("?persistentId=")[-1]
+        doi = url.split("?persistentId=")[-1].split("&")[0]
         dataverse_url = url.split("dataset.xhtml")[0]
 
         return cls.from_dataverse_doi(
