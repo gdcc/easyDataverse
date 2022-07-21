@@ -9,8 +9,8 @@ EasyDataverse is a Python libary used to interface Dataverse installations and g
 
 ###  Features
 
-- **Code generation** from Dataverse TSV metadata configurations
-- **Export and import** of datasets to various formats (JSON, YAML, XML and HDF5)
+- **Code generation** from Dataverse TSV metadata configurations.
+- **Export and import** of datasets to various formats (JSON, YAML, XML and HDF5).
 - **Source code publication** from a local or GitHub repository towards a Dataverse installation.
 - **Fetch datasets** from any Dataverse installation into an object oriented structure ready to be integrated.
 
