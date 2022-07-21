@@ -3,7 +3,7 @@ import forge
 import re
 import requests
 
-
+from pyDataverse.api import NativeApi
 from pydantic import Field, create_model
 from typing import Optional, List, Dict, List
 
@@ -46,7 +46,7 @@ class Types:
 
 
 # ! STEP 1 UTILS: Fetching of the raw Dataverse JSON data
-def fetch_dataset(p_id: str, dataverse_url: str):
+def fetch_dataset(p_id: str, dataverse_url: str, api_token: Optional[str] = None):
     """Fetches a dataset from a given Dataverse installation and persistent identifier.
 
     Args:
@@ -59,9 +59,13 @@ def fetch_dataset(p_id: str, dataverse_url: str):
     if dataverse_url.endswith("/"):
         dataverse_url = dataverse_url[0:-1]
 
-    return requests.get(
-        f"{dataverse_url}/api/datasets/:persistentId/?persistentId={p_id}"
-    ).json()
+    if api_token:
+        api = NativeApi(dataverse_url, api_token)
+    else:
+        api = NativeApi(dataverse_url)
+
+    # Download the dataset and retrieve the field data
+    return api.get_dataset(p_id).json()
 
 
 # ! STEP 2 UTILS: Creation of an on-the-fly object model

@@ -31,11 +31,6 @@ def download_from_dataverse_with_lib(
         api_token (str): API Token used to authorize at the dataverse installation. Can be inferred from env vars.
     """
 
-    # Fetch env vars, only if not explicitly gievn
-    # Get environment variables
-    if not all([dataverse_url, api_token]):
-        dataverse_url, api_token = _fetch_env_vars()
-
     # Intialize the pyDataverse instance to fetch the dataset
     api = NativeApi(dataverse_url, api_token)
 
@@ -91,7 +86,7 @@ def download_from_dataverse_without_lib(
     """
 
     # Step 1: Fetch data from the Dataverse installation and get blocks
-    dv_dataset = fetch_dataset(doi, dataverse_url)
+    dv_dataset = fetch_dataset(doi, dataverse_url, api_token)
     metadatablocks = dv_dataset["data"]["latestVersion"]["metadataBlocks"]
     dataset.p_id = doi
 
