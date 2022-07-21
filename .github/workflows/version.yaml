@@ -1,0 +1,29 @@
+name: Update Version
+
+on: [push]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.10'
+      - name: Update Readme and Badge Version
+        run: |
+          python .github/workflows/scripts/update_version.py
+      - name: Push changes
+        run: |
+          if [[ `git status --porcelain` ]]; then
+            git add Readme.md
+            git add easyDataverse/__init__.py
+            git config --global user.name 'VersionBot'
+            git config --global user.email 'versionbot@bot.com'
+            git commit -am "Update version"
+            git push
+          else
+            echo "Nothing changed here!"
+          fi
