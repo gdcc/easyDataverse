@@ -1,0 +1,142 @@
+{
+  "Citation": {
+    "title": null,
+    "subtitle": null,
+    "alternative_title": null,
+    "alternative_url": null,
+    "subject": null,
+    "notes": null,
+    "language": null,
+    "production_date": null,
+    "production_place": null,
+    "distribution_date": null,
+    "depositor": null,
+    "deposit_date": null,
+    "kind_of_data": null,
+    "related_material": null,
+    "related_datasets": null,
+    "other_references": null,
+    "data_sources": null,
+    "origin_of_sources": null,
+    "characteristic_of_sources_noted": null,
+    "documentation_and_access_to_sources": null,
+    "did_it_work": null,
+    "explanation": null,
+    "producer": [
+      {
+        "name": null,
+        "affiliation": null,
+        "abbreviation": null,
+        "url": null,
+        "logo_url": null
+      }
+    ],
+    "related_publication": [
+      {
+        "citation": null,
+        "id_type": null,
+        "id_number": null,
+        "url": null
+      }
+    ],
+    "distributor": [
+      {
+        "name": null,
+        "affiliation": null,
+        "abbreviation": null,
+        "url": null,
+        "logo_url": null
+      }
+    ],
+    "description": [
+      {
+        "text": null,
+        "date": null
+      }
+    ],
+    "topic_classification": [
+      {
+        "term": null,
+        "vocabulary": null,
+        "vocabulary_url": null
+      }
+    ],
+    "series": [
+      {
+        "name": null,
+        "information": null
+      }
+    ],
+    "grant_information": [
+      {
+        "grant_agency": null,
+        "grant_number": null
+      }
+    ],
+    "other_id": [
+      {
+        "agency": null,
+        "identifier": null
+      }
+    ],
+    "date_of_collection": [
+      {
+        "start": null,
+        "end": null
+      }
+    ],
+    "project": [
+      {
+        "name": null,
+        "level": null
+      }
+    ],
+    "contact": [
+      {
+        "name": null,
+        "affiliation": null,
+        "email": null
+      }
+    ],
+    "keyword": [
+      {
+        "term": null,
+        "vocabulary": null,
+        "vocabulary_url": null
+      }
+    ],
+    "contributor": [
+      {
+        "type": null,
+        "name": null
+      }
+    ],
+    "time_period_covered": [
+      {
+        "start": null,
+        "end": null
+      }
+    ],
+    "author": [
+      {
+        "name": null,
+        "affiliation": null,
+        "identifier_scheme": null,
+        "identifier": null
+      }
+    ],
+    "software": [
+      {
+        "name": null,
+        "version": null
+      }
+    ],
+    "storage": [
+      {
+        "name": null,
+        "location": null,
+        "size": null
+      }
+    ]
+  }
+}

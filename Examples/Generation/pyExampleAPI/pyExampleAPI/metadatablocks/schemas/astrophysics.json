@@ -1,0 +1,245 @@
+{
+  "$id": "astrophysics.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "astrophysics",
+  "type": "object",
+  "properties": {
+    "redshift_value": {
+      "typeName": "coverage.RedshiftValue",
+      "typeClass": "primitive",
+      "multiple": true,
+      "type": "array",
+      "description": "The value of the redshift (unitless) or Doppler velocity (km/s in the data object."
+    },
+    "type": {
+      "typeName": "astroType",
+      "typeClass": "controlledVocabulary",
+      "multiple": true,
+      "type": "array",
+      "description": "The nature or genre of the content of the files in the dataset.",
+      "enum": [
+        "Image",
+        "Mosaic",
+        "EventList",
+        "Spectrum",
+        "Cube",
+        "Table",
+        "Catalog",
+        "LightCurve",
+        "Simulation",
+        "Figure",
+        "Artwork",
+        "Animation",
+        "PrettyPicture",
+        "Documentation",
+        "Other",
+        "Library",
+        "Press Release",
+        "Facsimile",
+        "Historical",
+        "Observation",
+        "Object",
+        "Value",
+        "ValuePair",
+        "Survey"
+      ]
+    },
+    "facility": {
+      "typeName": "astroFacility",
+      "typeClass": "controlledVocabulary",
+      "multiple": true,
+      "type": "array",
+      "description": "The observatory or facility where the data was obtained. "
+    },
+    "instrument": {
+      "typeName": "astroInstrument",
+      "typeClass": "controlledVocabulary",
+      "multiple": true,
+      "type": "array",
+      "description": "The instrument used to collect the data."
+    },
+    "object": {
+      "typeName": "astroObject",
+      "typeClass": "primitive",
+      "multiple": true,
+      "type": "array",
+      "description": "Astronomical Objects represented in the data (Given as SIMBAD recognizable names preferred)."
+    },
+    "spatial_resolution": {
+      "typeName": "resolution.Spatial",
+      "typeClass": "primitive",
+      "multiple": false,
+      "type": "string",
+      "description": "The spatial (angular) resolution that is typical of the observations, in decimal degrees."
+    },
+    "spectral_resolution": {
+      "typeName": "resolution.Spectral",
+      "typeClass": "primitive",
+      "multiple": false,
+      "type": "string",
+      "description": "The spectral resolution that is typical of the observations, given as the ratio \\u03bb/\\u0394\\u03bb."
+    },
+    "time_resolution": {
+      "typeName": "resolution.Temporal",
+      "typeClass": "primitive",
+      "multiple": false,
+      "type": "string",
+      "description": "The temporal resolution that is typical of the observations, given in seconds."
+    },
+    "bandpass": {
+      "typeName": "coverage.Spectral.Bandpass",
+      "typeClass": "controlledVocabulary",
+      "multiple": true,
+      "type": "array",
+      "description": "Conventional bandpass name"
+    },
+    "central_wavelength_(m)": {
+      "typeName": "coverage.Spectral.CentralWavelength",
+      "typeClass": "primitive",
+      "multiple": true,
+      "type": "array",
+      "description": "The central wavelength of the spectral bandpass, in meters."
+    },
+    "sky_coverage": {
+      "typeName": "coverage.Spatial",
+      "typeClass": "primitive",
+      "multiple": true,
+      "type": "array",
+      "description": "The sky coverage of the data object."
+    },
+    "depth_coverage": {
+      "typeName": "coverage.Depth",
+      "typeClass": "primitive",
+      "multiple": false,
+      "type": "number",
+      "description": "The (typical) depth coverage, or sensitivity, of the data object in Jy."
+    },
+    "object_density": {
+      "typeName": "coverage.ObjectDensity",
+      "typeClass": "primitive",
+      "multiple": false,
+      "type": "number",
+      "description": "The (typical) density of objects, catalog entries, telescope pointings, etc., on the sky, in number per square degree."
+    },
+    "object_count": {
+      "typeName": "coverage.ObjectCount",
+      "typeClass": "primitive",
+      "multiple": false,
+      "type": "integer",
+      "description": "The total number of objects, catalog entries, etc., in the data object."
+    },
+    "fraction_of_sky": {
+      "typeName": "coverage.SkyFraction",
+      "typeClass": "primitive",
+      "multiple": false,
+      "type": "number",
+      "description": "The fraction of the sky represented in the observations, ranging from 0 to 1."
+    },
+    "polarization": {
+      "typeName": "coverage.Polarization",
+      "typeClass": "primitive",
+      "multiple": false,
+      "type": "string",
+      "description": "The polarization coverage"
+    },
+    "redshifttype": {
+      "typeName": "redshiftType",
+      "typeClass": "primitive",
+      "multiple": false,
+      "type": "string",
+      "description": "RedshiftType string C \"Redshift\"; or \"Optical\" or \"Radio\" definitions of Doppler velocity used in the data object."
+    },
+    "redshift_resolution": {
+      "typeName": "resolution.Redshift",
+      "typeClass": "primitive",
+      "multiple": false,
+      "type": "number",
+      "description": "The resolution in redshift (unitless) or Doppler velocity (km/s) in the data object."
+    },
+    "dataset_date_range": {
+      "typeName": "coverage.Temporal",
+      "type": "array",
+      "typeClass": "compound",
+      "multiple": true,
+      "description": " Time period covered by the data.",
+      "items": {
+        "$ref": "#/definitions/dataset_date_range"
+      }
+    },
+    "wavelength_range": {
+      "typeName": "coverage.Spectral.Wavelength",
+      "type": "array",
+      "typeClass": "compound",
+      "multiple": true,
+      "description": "The minimum and maximum wavelength of the spectral bandpass.",
+      "items": {
+        "$ref": "#/definitions/wavelength_range"
+      }
+    },
+    "_metadatablock_name": {
+      "default": "astrophysics",
+      "type": "string"
+    }
+  },
+  "definitions": {
+    "redshift_value": {
+      "properties": {
+        "minimum": {
+          "typeName": "coverage.Redshift.MinimumValue",
+          "typeClass": "primitive",
+          "multiple": false,
+          "type": "number",
+          "description": "The minimum value of the redshift (unitless) or Doppler velocity (km/s in the data object."
+        },
+        "maximum": {
+          "typeName": "coverage.Redshift.MaximumValue",
+          "typeClass": "primitive",
+          "multiple": false,
+          "type": "number",
+          "description": "The maximum value of the redshift (unitless) or Doppler velocity (km/s in the data object."
+        }
+      }
+    },
+    "dataset_date_range": {
+      "properties": {
+        "start": {
+          "typeName": "coverage.Temporal.StartTime",
+          "typeClass": "primitive",
+          "multiple": false,
+          "type": "string",
+          "description": "Dataset Start Date"
+        },
+        "end": {
+          "typeName": "coverage.Temporal.StopTime",
+          "typeClass": "primitive",
+          "multiple": false,
+          "type": "string",
+          "description": "Dataset End Date"
+        }
+      }
+    },
+    "wavelength_range": {
+      "properties": {
+        "minimum_(m)": {
+          "typeName": "coverage.Spectral.MinimumWavelength",
+          "typeClass": "primitive",
+          "multiple": false,
+          "type": "number",
+          "description": "The minimum wavelength of the spectral bandpass, in meters."
+        },
+        "maximum_(m)": {
+          "typeName": "coverage.Spectral.MaximumWavelength",
+          "typeClass": "primitive",
+          "multiple": false,
+          "type": "number",
+          "description": "The maximum wavelength of the spectral bandpass, in meters."
+        }
+      }
+    }
+  },
+  "required": [
+    "redshift_value",
+    "dataset_date_range",
+    "wavelength_range"
+  ]
+}

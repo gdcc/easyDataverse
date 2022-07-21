@@ -1,0 +1,34 @@
+{
+  "Astrophysics": {
+    "redshift_value": null,
+    "type": null,
+    "facility": null,
+    "instrument": null,
+    "object": null,
+    "spatial_resolution": null,
+    "spectral_resolution": null,
+    "time_resolution": null,
+    "bandpass": null,
+    "central_wavelength__m_": null,
+    "sky_coverage": null,
+    "depth_coverage": null,
+    "object_density": null,
+    "object_count": null,
+    "fraction_of_sky": null,
+    "polarization": null,
+    "redshifttype": null,
+    "redshift_resolution": null,
+    "dataset_date_range": [
+      {
+        "start": null,
+        "end": null
+      }
+    ],
+    "wavelength_range": [
+      {
+        "minimum_(m)": null,
+        "maximum_(m)": null
+      }
+    ]
+  }
+}

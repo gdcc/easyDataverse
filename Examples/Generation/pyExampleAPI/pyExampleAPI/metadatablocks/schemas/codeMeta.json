@@ -1,0 +1,210 @@
+{
+  "$id": "codeMeta.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "codeMeta",
+  "type": "object",
+  "properties": {
+    "software_requirements": {
+      "typeName": "codeMetaSoftwareRequirements",
+      "type": "array",
+      "typeClass": "compound",
+      "multiple": true,
+      "description": "Required software dependencies",
+      "items": {
+        "$ref": "#/definitions/software_requirements"
+      }
+    },
+    "software_version": {
+      "typeName": "codeMetaSoftwareVersion",
+      "typeClass": "primitive",
+      "multiple": false,
+      "type": "string",
+      "description": "Version of the software instance, usually following some convention like SemVer etc."
+    },
+    "development_status": {
+      "typeName": "codeMetaDevelopmentStatus",
+      "typeClass": "controlledVocabulary",
+      "multiple": false,
+      "type": "string",
+      "description": "Description of development status, e.g. work in progress (wip), active, inactive, suspended. See repostatus.org for more information.",
+      "enum": [
+        "concept",
+        "wip",
+        "active",
+        "inactive",
+        "unsupported",
+        "moved",
+        "suspended",
+        "abandoned"
+      ]
+    },
+    "code_repository": {
+      "typeName": "codeMetaCodeRepository",
+      "typeClass": "primitive",
+      "multiple": true,
+      "type": "array",
+      "description": "Link to the repository where the un-compiled, human readable code and related code is located (SVN, GitHub, CodePlex, institutional GitLab instance, etc.)."
+    },
+    "programming_language": {
+      "typeName": "codeMetaProgrammingLanguage",
+      "typeClass": "primitive",
+      "multiple": true,
+      "type": "array",
+      "description": "The programming language(s) used to implement the software (e.g. Python, C++, Matlab, Fortran, Java, Julia,...)"
+    },
+    "operating_systems": {
+      "typeName": "codeMetaOperatingSystem",
+      "typeClass": "primitive",
+      "multiple": true,
+      "type": "array",
+      "description": "Operating systems supported (e.g. Windows 10, OSX 11.3, Android 11)."
+    },
+    "application_category": {
+      "typeName": "codeMetaApplicationCategory",
+      "typeClass": "primitive",
+      "multiple": true,
+      "type": "array",
+      "description": "Type of software application, e.g. Simulation, Analysis, Visualisation."
+    },
+    "application_subcategory": {
+      "typeName": "codeMetaApplicationSubCategory",
+      "typeClass": "primitive",
+      "multiple": true,
+      "type": "array",
+      "description": "Subcategory of the application, e.g. Arcade Game."
+    },
+    "software_help_documentation": {
+      "typeName": "codeMetaSoftwareHelp",
+      "typeClass": "primitive",
+      "multiple": true,
+      "type": "array",
+      "description": "Link to help texts or documentation"
+    },
+    "build_instructions": {
+      "typeName": "codeMetaBuildInstructions",
+      "typeClass": "primitive",
+      "multiple": false,
+      "type": "string",
+      "description": "Link to installation instructions/documentation"
+    },
+    "runtime_platform": {
+      "typeName": "codeMetaRuntimePlatform",
+      "typeClass": "primitive",
+      "multiple": true,
+      "type": "array",
+      "description": "Runtime platform or script interpreter dependencies (Example - Java v1, Python2.3, .Net Framework 3.0). Supersedes runtime."
+    },
+    "target_product": {
+      "typeName": "codeMetaTargetProduct",
+      "typeClass": "primitive",
+      "multiple": true,
+      "type": "array",
+      "description": "Target Operating System / Product to which the code applies. If applies to several versions, just the product name can be used."
+    },
+    "permissions": {
+      "typeName": "codeMetaPermissions",
+      "typeClass": "primitive",
+      "multiple": true,
+      "type": "array",
+      "description": "Permission(s) required to run the code (for example, a mobile app may require full internet access or may run only on wifi)."
+    },
+    "memory_requirements": {
+      "typeName": "codeMetaMemoryRequirements",
+      "typeClass": "primitive",
+      "multiple": true,
+      "type": "array",
+      "description": "Minimum memory requirements."
+    },
+    "processor_requirements": {
+      "typeName": "codeMetaProcessorRequirements",
+      "typeClass": "primitive",
+      "multiple": true,
+      "type": "array",
+      "description": "Processor architecture required to run the application (e.g. IA64)."
+    },
+    "storage_requirements": {
+      "typeName": "codeMetaStorageRequirements",
+      "typeClass": "primitive",
+      "multiple": false,
+      "type": "string",
+      "description": "Storage requirements (e.g. free space required)."
+    },
+    "release_notes": {
+      "typeName": "codeMetaReleaseNotes",
+      "typeClass": "primitive",
+      "multiple": false,
+      "type": "string",
+      "description": "Link to release notes"
+    },
+    "continous_integration": {
+      "typeName": "codeMetaContIntegration",
+      "typeClass": "primitive",
+      "multiple": true,
+      "type": "array",
+      "description": "Link to continuous integration service"
+    },
+    "issue_tracker": {
+      "typeName": "codeMetaIssueTracker",
+      "typeClass": "primitive",
+      "multiple": false,
+      "type": "string",
+      "description": "Link to software bug reporting or issue tracking system"
+    },
+    "software_suggestions": {
+      "typeName": "codeMetaSoftwareSuggestions",
+      "type": "array",
+      "typeClass": "compound",
+      "multiple": true,
+      "description": "Optional dependencies , e.g. for optional features, code development, etc.",
+      "items": {
+        "$ref": "#/definitions/software_suggestions"
+      }
+    },
+    "_metadatablock_name": {
+      "default": "codeMeta",
+      "type": "string"
+    }
+  },
+  "definitions": {
+    "software_requirements": {
+      "properties": {
+        "name": {
+          "typeName": "codeMetaSoftwareRequirementsTitle",
+          "typeClass": "primitive",
+          "multiple": false,
+          "type": "string",
+          "description": "Name or title of the required software/library"
+        },
+        "url": {
+          "typeName": "codeMetaSoftwareRequirementsUrl",
+          "typeClass": "primitive",
+          "multiple": false,
+          "type": "string",
+          "description": "Link to required software/library"
+        }
+      }
+    },
+    "software_suggestions": {
+      "properties": {
+        "name": {
+          "typeName": "codeMetaSoftwareSuggestionsTitle",
+          "typeClass": "primitive",
+          "multiple": false,
+          "type": "string",
+          "description": "Name or title of the optional software/library"
+        },
+        "url": {
+          "typeName": "codeMetaSoftwareSuggestionsUrl",
+          "typeClass": "primitive",
+          "multiple": false,
+          "type": "string",
+          "description": "Link to optional software/library"
+        }
+      }
+    }
+  },
+  "required": [
+    "software_requirements",
+    "software_suggestions"
+  ]
+}

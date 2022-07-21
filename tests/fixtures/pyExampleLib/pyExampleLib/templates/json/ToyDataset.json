@@ -1,0 +1,11 @@
+{
+  "ToyDataset": {
+    "foo": null,
+    "some_enum": null,
+    "compound": [
+      {
+        "bar": null
+      }
+    ]
+  }
+}

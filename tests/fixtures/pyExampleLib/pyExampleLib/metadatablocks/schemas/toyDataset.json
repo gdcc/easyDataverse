@@ -1,0 +1,55 @@
+{
+  "$id": "toyDataset.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "toyDataset",
+  "type": "object",
+  "properties": {
+    "foo": {
+      "typeName": "fooField",
+      "typeClass": "primitive",
+      "multiple": false,
+      "type": "string",
+      "description": "Some primitive field"
+    },
+    "compound": {
+      "typeName": "fooCompound",
+      "type": "array",
+      "typeClass": "compound",
+      "multiple": false,
+      "description": "Some compound field",
+      "items": {
+        "$ref": "#/definitions/compound"
+      }
+    },
+    "some_enum": {
+      "typeName": "fooEnum",
+      "typeClass": "controlledVocabulary",
+      "multiple": false,
+      "type": "string",
+      "description": "Some enum field",
+      "enum": [
+        "enum"
+      ]
+    },
+    "_metadatablock_name": {
+      "default": "toyDataset",
+      "type": "string"
+    }
+  },
+  "definitions": {
+    "compound": {
+      "properties": {
+        "bar": {
+          "typeName": "fooCompoundField",
+          "typeClass": "primitive",
+          "multiple": false,
+          "type": "string",
+          "description": "Another primitive field"
+        }
+      }
+    }
+  },
+  "required": [
+    "compound"
+  ]
+}

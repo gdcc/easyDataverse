@@ -1,0 +1,7 @@
+from fastapi import FastAPI
+{% for import in imports %}
+from {{lib_name}}.metadatablocks.{{import.module}} import {{import.class}}
+{%- endfor %}
+
+app = FastAPI(title="{{lib_name}}", version="1.0", redoc_url="/")
+

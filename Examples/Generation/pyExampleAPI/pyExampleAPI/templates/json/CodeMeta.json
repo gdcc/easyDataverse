@@ -1,0 +1,34 @@
+{
+  "CodeMeta": {
+    "software_version": null,
+    "development_status": null,
+    "code_repository": null,
+    "programming_language": null,
+    "operating_systems": null,
+    "application_category": null,
+    "application_subcategory": null,
+    "software_help_documentation": null,
+    "build_instructions": null,
+    "runtime_platform": null,
+    "target_product": null,
+    "permissions": null,
+    "memory_requirements": null,
+    "processor_requirements": null,
+    "storage_requirements": null,
+    "release_notes": null,
+    "continous_integration": null,
+    "issue_tracker": null,
+    "software_requirements": [
+      {
+        "name": null,
+        "url": null
+      }
+    ],
+    "software_suggestions": [
+      {
+        "name": null,
+        "url": null
+      }
+    ]
+  }
+}

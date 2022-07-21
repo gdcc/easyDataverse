@@ -1,0 +1,93 @@
+{
+  "$id": "journal.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "journal",
+  "type": "object",
+  "properties": {
+    "type_of_article": {
+      "typeName": "journalArticleType",
+      "typeClass": "controlledVocabulary",
+      "multiple": false,
+      "type": "string",
+      "description": "Indicates what kind of article this is, for example, a research article, a commentary, a book or product review, a case report, a calendar, etc (based on JATS). ",
+      "enum": [
+        "abstract",
+        "addendum",
+        "announcement",
+        "article-commentary",
+        "book review",
+        "books received",
+        "brief report",
+        "calendar",
+        "case report",
+        "collection",
+        "correction",
+        "data paper",
+        "discussion",
+        "dissertation",
+        "editorial",
+        "in brief",
+        "introduction",
+        "letter",
+        "meeting report",
+        "news",
+        "obituary",
+        "oration",
+        "partial retraction",
+        "product review",
+        "rapid communication",
+        "reply",
+        "reprint",
+        "research article",
+        "retraction",
+        "review article",
+        "translation",
+        "other"
+      ]
+    },
+    "journal_data": {
+      "typeName": "journalVolumeIssue",
+      "type": "array",
+      "typeClass": "compound",
+      "multiple": true,
+      "description": "Indicates the volume, issue and date of a journal, which this Dataset is associated with.",
+      "items": {
+        "$ref": "#/definitions/journal_data"
+      }
+    },
+    "_metadatablock_name": {
+      "default": "journal",
+      "type": "string"
+    }
+  },
+  "definitions": {
+    "journal_data": {
+      "properties": {
+        "volume": {
+          "typeName": "journalVolume",
+          "typeClass": "primitive",
+          "multiple": false,
+          "type": "string",
+          "description": "The journal volume which this Dataset is associated with (e.g., Volume 4)."
+        },
+        "issue": {
+          "typeName": "journalIssue",
+          "typeClass": "primitive",
+          "multiple": false,
+          "type": "string",
+          "description": "The journal issue number which this Dataset is associated with (e.g., Number 2, Autumn)."
+        },
+        "publication_date": {
+          "typeName": "journalPubDate",
+          "typeClass": "primitive",
+          "multiple": false,
+          "type": "string",
+          "description": "The publication date for this journal volume/issue, which this Dataset is associated with (e.g., 1999)."
+        }
+      }
+    }
+  },
+  "required": [
+    "journal_data"
+  ]
+}

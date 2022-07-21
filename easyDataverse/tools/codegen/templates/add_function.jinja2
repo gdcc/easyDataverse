@@ -1,0 +1,23 @@
+
+
+    def add_{{field}}(
+        self,
+        {%- for def in definitions %}
+        {{def}}
+        {%- endfor %}
+    ):
+        """{{summary}}
+
+        Args:
+        {% for arg in args_doc %}
+            {{arg}}
+        {%- endfor %}
+
+        """
+
+        self.{{field}}.append(
+            {{class_name}}(
+                {{params}}
+            )
+        )
+

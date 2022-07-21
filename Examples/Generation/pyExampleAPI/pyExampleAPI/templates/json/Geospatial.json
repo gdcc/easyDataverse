@@ -1,0 +1,21 @@
+{
+  "Geospatial": {
+    "geographic_unit": null,
+    "geographic_coverage": [
+      {
+        "country___nation": null,
+        "state___province": null,
+        "city": null,
+        "other": null
+      }
+    ],
+    "geographic_bounding_box": [
+      {
+        "west_longitude": null,
+        "east_longitude": null,
+        "north_latitude": null,
+        "south_latitude": null
+      }
+    ]
+  }
+}

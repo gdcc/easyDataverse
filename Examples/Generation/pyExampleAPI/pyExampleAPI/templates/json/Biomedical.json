@@ -1,0 +1,17 @@
+{
+  "Biomedical": {
+    "design_type": null,
+    "other_design_type": null,
+    "factor_type": null,
+    "other_factor_type": null,
+    "organism": null,
+    "other_organism": null,
+    "measurement_type": null,
+    "other_measurement_type": null,
+    "technology_type": null,
+    "other_technology_type": null,
+    "technology_platform": null,
+    "other_technology_platform": null,
+    "cell_type": null
+  }
+}

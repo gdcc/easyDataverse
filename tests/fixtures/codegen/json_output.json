@@ -1,0 +1,14 @@
+{
+    "lib_name": "pySomeTest",
+    "metadatablocks": {
+        "toyDataset": {
+            "foo": "foo",
+            "compound": [
+                {
+                    "bar": "bar"
+                }
+            ],
+            "some_enum": "enum"
+        }
+    }
+}

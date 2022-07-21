@@ -1,0 +1,7 @@
+lib_name: pyExampleLib
+metadatablocks:
+  toyDataset:
+    foo: foo
+    compound:
+      - bar: bar
+    some_enum: enum

@@ -1,0 +1,9 @@
+import os
+
+from easyDataverse import Dataset, ProgrammingLanguage
+{%- for import in imports %}
+{{import}}
+{%- endfor %}
+
+# Add the lib_name to the operating systems env
+os.environ["EASYDATAVERSE_LIB_NAME"] = "{{lib_name}}"

@@ -1,0 +1,8 @@
+@app.post(
+    "/create/{{module_name.lower()}}",
+    summary="Create {{class_name}} block",
+    description="Creates a Dataverse compatible JSON file for the {{class_name}} schema",
+    tags=["Metadatablocks"]
+)
+async def create_{{module_name.lower()}}({{module_name.lower()}}: {{class_name}}):
+    return {{module_name.lower()}}.dataverse_dict()

@@ -1,0 +1,9 @@
+#metadataBlock	name	dataverseAlias	displayName	blockURI												
+b	ToyDataset		Toy Dataset													
+#datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id	termURI
+	fooField	foo	Some primitive field		text	0	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE		ToyDataset	
+	fooCompound	compound	Some compound field		none	1	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		ToyDataset	
+	fooEnum	some_enum	Some enum field		text	2	#VALUE	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		ToyDataset	
+	fooCompoundField	bar	Another primitive field		text	3	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	fooCompound	ToyDataset	
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder												
+	fooEnum	enum	0	0												
