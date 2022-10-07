@@ -577,6 +577,33 @@ class Dataset(BaseModel):
 
     # ! Utilities
 
+    def list_files(self):
+        """Lists all files present in the dataset for inspection"""
+        for file in self.files:
+            print(f"{file.file_pid}\t{file.filename}")
+
+    def replace_file(self, filename: str, local_path: str):
+        """Replaces a given file which will be uploaded upon calling the 'update'-method
+
+        Please note, this function is best used when replacing big files when the sole
+        purpose is to update a file without downloading it. Hence, this method is best
+        used in conjunction with the 'from_dataverse_doi' or 'from_url' method with
+        'download_files' set to 'False'.
+        """
+
+        file = list(filter(lambda f: f.filename == filename, self.files))
+
+        if len(file) == 0:
+            raise ValueError(
+                f"File '{filename}' is not present in the dataset. Please use 'list_files' to see which files are registered."
+            )
+        elif len(file) > 1:
+            raise ValueError(
+                "More than one file found under filename '{filename}'. This is actually impossible, but better to have an exception for the exception :-)"
+            )
+
+        file[0].local_path = local_path
+
     @staticmethod
     def _snake_to_camel(word: str) -> str:
         return "".join(x.capitalize() or "_" for x in word.split("_"))

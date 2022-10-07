@@ -78,9 +78,10 @@ def download_files(
 ) -> None:
     """Downloads and adds all files given in the dataset to the Dataset-Object"""
 
-    # Set up the progress bar
-    files_list = tqdm.tqdm(files_list, file=sys.stdout)
-    files_list.set_description(f"Downloading data files")
+    if filedir is not None:
+        # Set up the progress bar
+        files_list = tqdm.tqdm(files_list, file=sys.stdout)
+        files_list.set_description(f"Downloading data files")
 
     for file in files_list:
 
@@ -118,7 +119,5 @@ def download_files(
             local_path=local_path,
             file_pid=file_pid,
         )
-
-        print(datafile)
 
         dataset.files.append(datafile)
