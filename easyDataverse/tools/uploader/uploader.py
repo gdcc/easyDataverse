@@ -67,7 +67,7 @@ def upload_to_dataverse(
         if files:
             __uploadFiles(files, p_id, api, content_loc)
 
-        print(f"{os.environ['DATAVERSE_URL']}/dataset.xhtml?persistentId={p_id}")
+        print(f"{DATAVERSE_URL}/dataset.xhtml?persistentId={p_id}")
 
         return p_id
 
@@ -174,27 +174,29 @@ def update_dataset(
     api, _ = _initialize_pydataverse(DATAVERSE_URL, API_TOKEN)
 
     # Update files that have a pid
+    new_files = []
     for file in files:
         if not file.file_pid:
-            continue
+            new_files.append(file)
 
         # Get the metadata of the file
         file_dir = os.path.dirname(file.filename)
 
-        response = api.replace_datafile(
-            identifier=file.file_pid,
-            filename=file.local_path,
-            json_str=json.dumps(
-                {
-                    "description": file.description,
-                    "forceReplace": True,
-                    "directoryLabel": file_dir,
-                }
-            ),
-            is_filepid=False,
-        )
+        if file.local_path is not None:
+            response = api.replace_datafile(
+                identifier=file.file_pid,
+                filename=file.local_path,
+                json_str=json.dumps(
+                    {
+                        "description": file.description,
+                        "forceReplace": True,
+                        "directoryLabel": file_dir,
+                    }
+                ),
+                is_filepid=False,
+            )
 
     # Upload files that havent been added yet
-    __uploadFiles(files, p_id, api, content_loc)
+    __uploadFiles(new_files, p_id, api, content_loc)
 
     return True

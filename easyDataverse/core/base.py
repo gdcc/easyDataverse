@@ -94,45 +94,42 @@ class DataverseBase(BaseModel):
         """Converts a metadatablock object model to the appropriate dataverse JSON format"""
 
         # Get properties and init json_obj
-        schema_props = self.schema()["properties"]
         json_obj = {}
 
-        for attr, value in self.__dict__.items():
+        for attr, field in self.__fields__.items():
 
             if any(name in attr for name in ["add_", "_metadatablock_name"]):
                 # Only necessary for blind fetch
                 continue
 
-            if value == []:
+            # Fetch the value of the attribute
+            properties = field.field_info.extra
+            value = getattr(self, attr)
+
+            if value == [] or value is None:
                 # Guard clause to catch empty compounds
                 continue
-
-            # Fetch dataverse infos
-            properties = schema_props[attr]
 
             # Process compounds
             if properties["typeClass"] == "compound":
                 value = [field.dataverse_dict() for field in value]
 
             # Assign everything
-            if value:
+            if isinstance(value, list):
+                # TODO Refactor to separate check
+                if all(isinstance(val, Enum) for val in value):
+                    value = [val.value for val in value]
 
-                # Take care of Enum Lists
-                if isinstance(value, list):
-                    # TODO Refactor to separate check
-                    if all(isinstance(val, Enum) for val in value):
-                        value = [val.value for val in value]
-
-                json_obj.update(
-                    {
-                        properties["typeName"]: {
-                            "multiple": properties["multiple"],
-                            "typeClass": properties["typeClass"],
-                            "typeName": properties["typeName"],
-                            "value": value if isinstance(value, list) else str(value),
-                        }
+            json_obj.update(
+                {
+                    properties["typeName"]: {
+                        "multiple": properties["multiple"],
+                        "typeClass": properties["typeClass"],
+                        "typeName": properties["typeName"],
+                        "value": value if isinstance(value, list) else str(value),
                     }
-                )
+                }
+            )
 
         if hasattr(self, "_metadatablock_name"):
             return {

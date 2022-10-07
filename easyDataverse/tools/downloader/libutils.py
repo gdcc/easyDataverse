@@ -91,22 +91,25 @@ def download_files(
         description = file["dataFile"].get("description")
         directory_label = file.get("directoryLabel")
 
-        # Get the content
-        response = data_api.get_datafile(file_pid)
+        if filedir is not None:
+            # Get the content
+            response = data_api.get_datafile(file_pid)
 
-        if response.status_code != 200:
-            raise FileNotFoundError(f"No content found for file {filename}.")
+            if response.status_code != 200:
+                raise FileNotFoundError(f"No content found for file {filename}.")
 
-        # Create local path for later upload
-        if directory_label:
-            filename = os.path.join(directory_label, filename)
+            # Create local path for later upload
+            if directory_label:
+                filename = os.path.join(directory_label, filename)
 
-        local_path = os.path.join(filedir, filename)
+            local_path = os.path.join(filedir, filename)
 
-        # Write content to local file
-        os.makedirs(os.path.dirname(local_path), exist_ok=True)
-        with open(local_path, "wb") as f:
-            f.write(response.content)
+            # Write content to local file
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            with open(local_path, "wb") as f:
+                f.write(response.content)
+        else:
+            local_path = None
 
         # Create the file object
         datafile = File(
@@ -115,5 +118,7 @@ def download_files(
             local_path=local_path,
             file_pid=file_pid,
         )
+
+        print(datafile)
 
         dataset.files.append(datafile)

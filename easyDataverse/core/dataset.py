@@ -346,7 +346,8 @@ class Dataset(BaseModel):
     def from_dataverse_doi(
         cls,
         doi: str,
-        filedir: str = ".",
+        filedir: Optional[str] = ".",
+        download_files: bool = True,
         lib_name: Optional[str] = None,
         dataverse_url: Optional[str] = None,
         api_token: Optional[str] = None,
@@ -356,11 +357,15 @@ class Dataset(BaseModel):
         Args:
             doi (str): DOI of the dataverse Dataset.
             filedir (str): Path to the directory where files will be downloaded to.
+            download_files (bool): Whether or not files should be downloaded. Will override 'filedir'
             lib_name (str, optional): Name of the library to fetch the given metadatablocks.
 
         Returns:
             Dataset: Resulting dataset that has been downloaded from Dataverse.
         """
+
+        if download_files is False:
+            filedir = None
 
         # Get credentials
         url, api_token = cls._fetch_env_vars()

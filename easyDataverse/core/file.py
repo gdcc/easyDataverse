@@ -3,6 +3,7 @@ import os
 from typing import Optional
 from pydantic import BaseModel, validator
 
+
 class File(BaseModel):
 
     filename: str
@@ -16,5 +17,5 @@ class File(BaseModel):
 
         if desc is None:
             return ""
-        
+
         return desc
