@@ -67,7 +67,10 @@ def upload_to_dataverse(
         if files:
             __uploadFiles(files, p_id, api, content_loc)
 
-        print(f"{DATAVERSE_URL}/dataset.xhtml?persistentId={p_id}")
+        if DATAVERSE_URL:
+            print(f"{DATAVERSE_URL}/dataset.xhtml?persistentId={p_id}")
+        else:
+            print(f"{os.environ['DATAVERSE_URL']}/dataset.xhtml?persistentId={p_id}")
 
         return p_id
 
@@ -98,26 +101,79 @@ def _initialize_pydataverse(DATAVERSE_URL: Optional[str], API_TOKEN: Optional[st
 def __uploadFiles(
     files: List[File], p_id: str, api: DataAccessApi, content_loc: Optional[str] = None
 ) -> None:
+    """Uploads any file to a dataverse dataset.
+    Args:
+        filename (String): Path to the file
+        p_id (String): Dataset permanent ID to upload.
+        api (API): API object which is used to upload the file
+    """
+
+    # Compress all files present in a ZipFile
+    zip_file = io.BytesIO()
+    zf = zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED)
+    has_content = False
 
     # Set up a progress bar
     files = tqdm.tqdm(files, file=sys.stdout)
-    files.set_description(f"Uploading data files")
+    files.set_description(f"Zipping data files")
 
-    for file in files:
+    chunks = []
 
+    for index, file in enumerate(files):
+        if file.local_path and not file.file_pid:
+            has_content = True
+            zf.writestr(file.filename, open(file.local_path, "rb").read())
+
+        if (index + 1) % 999 == 0:
+            # Make chunks of 999 files each
+            filename = f"contents{len(chunks)}.zip"
+            chunks.append(filename)
+
+            zf, zip_file = _write_and_renew_chunk(
+                fname=filename, zip_file=zip_file, content_loc=content_loc
+            )
+
+    # Write remaining data into new chunk zip
+    filename = f"contents{len(chunks)+1}.zip"
+    chunks.append(filename)
+
+    _write_and_renew_chunk(fname=filename, zip_file=zip_file, content_loc=content_loc)
+
+    # Now upload all chunks
+    chunks = tqdm.tqdm(chunks, file=sys.stdout)
+    chunks.set_description(f"Uploading data files")
+
+    for chunk in chunks:
         df = Datafile()
-        df.set(
-            {
-                "pid": p_id,
-                "filename": file.filename,
-                "directoryLabel": file.dv_dir,
-            }
-        )
+        df.set({"pid": p_id, "filename": chunk})
 
-        response = api.upload_datafile(p_id, file.local_path, df.json())
+        if has_content:
+            response = api.upload_datafile(p_id, chunk, df.json())
 
-        if response.status_code != 200:
-            raise ValueError(f"Upload failed: {response.status_code} {response.text}")
+            if response.status_code != 200:
+                raise ValueError(
+                    f"Upload failed: {response.status_code} {response.text}"
+                )
+
+        if content_loc is None:
+            os.remove(chunk)
+
+
+def _write_and_renew_chunk(fname: str, zip_file, content_loc):
+    """Writes a given in-memory chunk to a zip file and return a fresh one"""
+
+    if content_loc:
+        # Create destination dir to store upload package
+        os.makedirs(content_loc, exist_ok=True)
+        filename = os.path.join(content_loc, fname)
+
+    with open(fname, "wb") as f:
+        f.write(zip_file.getvalue())
+
+    zip_file = io.BytesIO()
+    zf = zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED)
+
+    return zf, zip_file
 
 
 def update_dataset(
