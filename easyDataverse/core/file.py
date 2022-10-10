@@ -10,6 +10,7 @@ class File(BaseModel):
     description: Optional[str] = None
     file_pid: Optional[str] = None
     local_path: Optional[str] = None
+    dv_dir: Optional[str] = None
 
     @validator("description")
     def handle_empty_descriptions(cls, desc):

@@ -54,8 +54,11 @@ class TestFileAddition:
         ), f"Expected File type, got {dataset.files[0].__class__.__name__}"
 
         assert (
-            dataset.files[0].filename == "mydir/toydataset.py"
+            dataset.files[0].filename == "toydataset.py"
         ), "Filename has changed"
+        assert (
+            dataset.files[0].dv_dir == "mydir"
+        ), "Dataverse directory has changed"
         assert (
             dataset.files[0].local_path == ".tests/fixture/toydataset.py"
         ), "Local path is incorrect"

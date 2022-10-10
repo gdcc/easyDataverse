@@ -4,16 +4,6 @@
   "title": "toyDataset",
   "type": "object",
   "properties": {
-    "compound": {
-      "typeName": "fooCompound",
-      "type": "array",
-      "typeClass": "compound",
-      "multiple": false,
-      "description": "Some compound field",
-      "items": {
-        "$ref": "#/definitions/compound"
-      }
-    },
     "foo": {
       "typeName": "fooField",
       "typeClass": "primitive",
@@ -30,6 +20,16 @@
       "enum": [
         "enum"
       ]
+    },
+    "compound": {
+      "typeName": "fooCompound",
+      "type": "array",
+      "typeClass": "compound",
+      "multiple": false,
+      "description": "Some compound field",
+      "items": {
+        "$ref": "#/definitions/compound"
+      }
     },
     "_metadatablock_name": {
       "default": "toyDataset",

@@ -63,7 +63,14 @@ class Dataset(BaseModel):
         """
 
         # Create the file
-        file = File(filename=dv_path, local_path=local_path, description=description)
+        filename = os.path.basename(dv_path)
+        dv_dir = os.path.dirname(dv_path)
+        file = File(
+            filename=filename,
+            dv_dir=dv_dir,
+            local_path=local_path,
+            description=description,
+        )
 
         if file not in self.files:
             self.files.append(file)
@@ -115,7 +122,14 @@ class Dataset(BaseModel):
                     if not p in dirpath.split(os.path.sep)
                 ]
                 filename = os.path.join(*path_parts)
-                data_file = File(filename=filename, local_path=filepath)
+
+                if dirpath != ".":
+                    # Just catch the structure inside the dir
+                    dv_dir = os.path.dirname(filepath.split(dirpath)[-1])
+                else:
+                    dv_dir = None
+
+                data_file = File(filename=filename, local_path=filepath, dv_dir=dv_dir)
 
                 # Substitute new files with old files
                 found = False

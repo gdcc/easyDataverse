@@ -98,49 +98,26 @@ def _initialize_pydataverse(DATAVERSE_URL: Optional[str], API_TOKEN: Optional[st
 def __uploadFiles(
     files: List[File], p_id: str, api: DataAccessApi, content_loc: Optional[str] = None
 ) -> None:
-    """Uploads any file to a dataverse dataset.
-    Args:
-        filename (String): Path to the file
-        p_id (String): Dataset permanent ID to upload.
-        api (API): API object which is used to upload the file
-    """
-
-    # Compress all files present in a ZipFile
-    zip_file = io.BytesIO()
-    has_content = False
 
     # Set up a progress bar
     files = tqdm.tqdm(files, file=sys.stdout)
     files.set_description(f"Uploading data files")
 
-    with zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED) as zf:
-        for file in files:
-            if file.local_path and not file.file_pid:
-                has_content = True
-                zf.writestr(file.filename, open(file.local_path, "rb").read())
+    for file in files:
 
-    # Write to the zip
-    filename = "contents.zip"
+        df = Datafile()
+        df.set(
+            {
+                "pid": p_id,
+                "filename": file.filename,
+                "directoryLabel": file.dv_dir,
+            }
+        )
 
-    if content_loc:
-        # Create destination dir to store upload package
-        os.makedirs(content_loc, exist_ok=True)
-        filename = os.path.join(content_loc, filename)
-
-    with open(filename, "wb") as f:
-        f.write(zip_file.getvalue())
-
-    df = Datafile()
-    df.set({"pid": p_id, "filename": filename})
-
-    if has_content:
-        response = api.upload_datafile(p_id, filename, df.json())
+        response = api.upload_datafile(p_id, file.local_path, df.json())
 
         if response.status_code != 200:
             raise ValueError(f"Upload failed: {response.status_code} {response.text}")
-
-    if content_loc is None:
-        os.remove(filename)
 
 
 def update_dataset(
