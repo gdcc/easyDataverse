@@ -361,6 +361,7 @@ class Dataset(BaseModel):
         cls,
         doi: str,
         filedir: Optional[str] = ".",
+        filenames: Optional[List[str]] = None,
         download_files: bool = True,
         lib_name: Optional[str] = None,
         dataverse_url: Optional[str] = None,
@@ -405,6 +406,7 @@ class Dataset(BaseModel):
                 filedir=filedir,
                 dataverse_url=dataverse_url,
                 api_token=api_token,
+                filenames=filenames,
             )
 
         elif not lib_name and "EASYDATAVERSE_LIB_NAME" in os.environ:
@@ -417,6 +419,7 @@ class Dataset(BaseModel):
                 filedir=filedir,
                 dataverse_url=url,
                 api_token=api_token,
+                filenames=filenames,
             )
         else:
             dataverse_url, api_token = cls._fetch_env_vars()
@@ -427,6 +430,7 @@ class Dataset(BaseModel):
                 filedir=filedir,
                 dataverse_url=url,
                 api_token=api_token,
+                filenames=filenames,
             )
 
     @staticmethod

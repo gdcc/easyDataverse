@@ -1,6 +1,5 @@
-import os
-
-from typing import Tuple
+from fileinput import filename
+from typing import Optional, List
 
 from pyDataverse.api import NativeApi, DataAccessApi
 from easyDataverse.tools.utils import get_class
@@ -17,6 +16,7 @@ def download_from_dataverse_with_lib(
     doi: str,
     lib_name: str,
     filedir: str,
+    filenames: Optional[List[str]] = None,
     dataverse_url: str = "",
     api_token: str = "",
 ):
@@ -61,13 +61,18 @@ def download_from_dataverse_with_lib(
     # Add all files present in the dataset
     files_list = dv_dataset.json()["data"]["latestVersion"]["files"]
     data_api = DataAccessApi(dataverse_url, api_token)
-    download_files(data_api, dataset, files_list, filedir)
+    download_files(data_api, dataset, files_list, filedir, filenames)
 
     return dataset
 
 
 def download_from_dataverse_without_lib(
-    dataset, doi: str, filedir: str, dataverse_url: str, api_token: str
+    dataset,
+    doi: str,
+    filedir: str,
+    dataverse_url: str,
+    api_token: str,
+    filenames: Optional[List[str]] = None,
 ):
     """Downloads and initializes a dataset from a dataverse URL and persistent identifier.
 
@@ -105,6 +110,6 @@ def download_from_dataverse_without_lib(
     # Step 4: Fetch files and add them to the dataset
     files_list = dv_dataset["data"]["latestVersion"]["files"]
     data_api = DataAccessApi(dataverse_url, api_token)
-    download_files(data_api, dataset, files_list, filedir)
+    download_files(data_api, dataset, files_list, filedir, filenames)
 
     return dataset

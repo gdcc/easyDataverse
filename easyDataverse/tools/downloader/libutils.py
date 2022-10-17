@@ -2,7 +2,7 @@ import os
 import tqdm
 import sys
 
-from typing import Callable, List, Dict
+from typing import Callable, List, Dict, Optional
 
 from pyDataverse.api import DataAccessApi
 from easyDataverse.core.file import File
@@ -74,7 +74,11 @@ def _get_compound_definitions(module, type_name: str):
 
 
 def download_files(
-    data_api: DataAccessApi, dataset, files_list: List[Dict], filedir: str
+    data_api: DataAccessApi,
+    dataset,
+    files_list: List[Dict],
+    filedir: str,
+    filenames: Optional[List[str]] = None,
 ) -> None:
     """Downloads and adds all files given in the dataset to the Dataset-Object"""
 
@@ -89,11 +93,16 @@ def download_files(
         filename = file["dataFile"]["filename"]
         file_pid = file["dataFile"]["id"]
 
+        if filenames is not None and filename not in filenames:
+            # Just download the necessary files
+            continue
+
         description = file["dataFile"].get("description")
         directory_label = file.get("directoryLabel")
 
         if filedir is not None:
             # Get the content
+
             response = data_api.get_datafile(file_pid)
 
             if response.status_code != 200:
