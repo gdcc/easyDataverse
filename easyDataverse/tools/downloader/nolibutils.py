@@ -29,8 +29,7 @@ class Types:
     def get_mixed_type(
         cls, dtype: str, multiple: bool = False, required: bool = False, pre: str = ""
     ):
-
-        STRING_TYPES = ["text", "textbox", "url"]
+        STRING_TYPES = ["text", "textbox", "url", "date"]
         FLOAT_TYPES = ["float"]
         INTEGER_TYPES = ["integer"]
 
@@ -43,6 +42,8 @@ class Types:
             return cls.__dict__[f"{pre}STR"]
         elif dtype.lower() in FLOAT_TYPES:
             return cls.__dict__[f"{pre}FLOAT"]
+        else:
+            return cls.__dict__[f"{pre}STR"]
 
 
 # ! STEP 1 UTILS: Fetching of the raw Dataverse JSON data
