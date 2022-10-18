@@ -42,6 +42,8 @@ class Types:
             return cls.__dict__[f"{pre}STR"]
         elif dtype.lower() in FLOAT_TYPES:
             return cls.__dict__[f"{pre}FLOAT"]
+        elif dtype.lower() in INTEGER_TYPES:
+            return cls.__dict__[f"{pre}INT"]
         else:
             return cls.__dict__[f"{pre}STR"]
 
