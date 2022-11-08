@@ -5,8 +5,9 @@ import warnings
 import xmltodict
 import yaml
 
-from typing import Dict, Any, List, Optional
 from pydantic import BaseModel, validate_arguments, Field
+from typing import Dict, Any, List, Optional
+from urllib.parse import urlparse, parse_qs
 from json import dumps
 
 from easyDataverse.core.file import File
@@ -345,11 +346,18 @@ class Dataset(BaseModel):
         # Break down the URL and gather doi and target url
         # Example: https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/darus-2469
 
-        doi = url.split("?persistentId=")[-1].split("&")[0]
-        dataverse_url = url.split("dataset.xhtml")[0]
+        parsed_url = urlparse(url)
+        doi = parse_qs(parsed_url.query).get("persistentId")
+
+        if doi is None:
+            raise ValueError(
+                f"Given URL '{url}' is not a valid Dataverse URL since no 'persistenID' is given"
+            )
+
+        dataverse_url = f"https://{parsed_url.hostname}/"
 
         return cls.from_dataverse_doi(
-            doi=doi,
+            doi=doi[0],
             filedir=filedir,
             lib_name=lib_name,
             dataverse_url=dataverse_url,
