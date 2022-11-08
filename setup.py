@@ -1,7 +1,7 @@
 import setuptools
 from setuptools import setup
 
-__VERSION__ = "0.3.7"
+__VERSION__ = "0.3.8"
 
 setup(
     name="easyDataverse",

@@ -338,6 +338,7 @@ class Dataset(BaseModel):
         cls,
         url: str,
         filedir: str = ".",
+        download_files: bool = True,
         api_token: Optional[str] = None,
         lib_name: Optional[str] = None,
     ):
@@ -353,6 +354,7 @@ class Dataset(BaseModel):
             lib_name=lib_name,
             dataverse_url=dataverse_url,
             api_token=api_token,
+            download_files=download_files,
         )
 
     @classmethod
