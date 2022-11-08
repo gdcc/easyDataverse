@@ -393,7 +393,7 @@ class Dataset(BaseModel):
             filedir = None
 
         # Get credentials
-        url, api_token = cls._fetch_env_vars()
+        url, api_token = cls._fetch_env_vars(api_token)
 
         if url is None and dataverse_url is None:
             raise ValueError(
@@ -444,9 +444,15 @@ class Dataset(BaseModel):
             )
 
     @staticmethod
-    def _fetch_env_vars():
+    def _fetch_env_vars(api_token: Optional[str] = None):
         """Fetches DATAVERSE_URL and DATAVERSE_API_TOKEN from environment variables"""
-        return os.environ.get("DATAVERSE_URL"), os.environ.get("DATAVERSE_API_TOKEN")
+
+        if api_token is None:
+            return os.environ.get("DATAVERSE_URL"), os.environ.get(
+                "DATAVERSE_API_TOKEN"
+            )
+        else:
+            return os.environ.get("DATAVERSE_URL"), api_token
 
     @staticmethod
     def _fetch_without_lib(**kwargs):
