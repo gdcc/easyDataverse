@@ -10,6 +10,7 @@ setup(
     author_email="jan.range@simtech.uni-stuttgart.de",
     license="MIT License",
     packages=setuptools.find_packages(),
+    package_data={"": ["*.jinja2"]},
     include_package_data=True,
     entry_points={"console_scripts": ["dataverse=easyDataverse.cli:main"]},
     install_requires=[
