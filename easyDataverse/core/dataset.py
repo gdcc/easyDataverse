@@ -392,6 +392,9 @@ class Dataset(BaseModel):
         if download_files is False:
             filedir = None
 
+        if not doi.startswith("doi:"):
+            doi = f"doi:{doi}"
+
         # Get credentials
         url, api_token = cls._fetch_env_vars(api_token)
 
