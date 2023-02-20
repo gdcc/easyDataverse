@@ -198,7 +198,7 @@ def update_dataset(
     response = requests.put(
         url,
         json=json_data,
-        headers={"X-Dataverse-key": os.environ["DATAVERSE_API_TOKEN"]},
+        headers={"X-Dataverse-key": API_TOKEN},
     )
 
     if response.json()["status"] != "OK":

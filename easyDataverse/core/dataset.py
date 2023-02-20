@@ -423,7 +423,7 @@ class Dataset(BaseModel):
             )
 
         elif not lib_name and "EASYDATAVERSE_LIB_NAME" in os.environ:
-            dataverse_url, api_token = cls._fetch_env_vars()
+            dataverse_url, api_token = cls._fetch_env_vars(api_token)
             lib_name = os.environ["EASYDATAVERSE_LIB_NAME"]
             return cls._fetch_with_lib(
                 dataset=cls(),
