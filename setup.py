@@ -28,7 +28,8 @@ setup(
         "typer",
         "python-forge",
         "anytree",
-        "dottet-dict",
+        "dotted-dict==1.1.3",
+        "python-forge==18.6.0",
     ],
     extras_require={"test": ["pytest-cov"]},
 )
