@@ -6,6 +6,7 @@ import sys
 import tqdm
 import zipfile
 
+from urllib.parse import urljoin
 from typing import List, Optional
 
 from pyDataverse.api import NativeApi, DataAccessApi
@@ -46,6 +47,7 @@ def upload_to_dataverse(
     """
 
     api, _ = _initialize_pydataverse(DATAVERSE_URL, API_TOKEN)
+
     ds = Dataset()
     ds.from_json(json_data)
 
@@ -78,22 +80,15 @@ def upload_to_dataverse(
         raise Exception("Could not upload")
 
 
-def _initialize_pydataverse(DATAVERSE_URL: Optional[str], API_TOKEN: Optional[str]):
+def _initialize_pydataverse(DATAVERSE_URL: str, API_TOKEN: str):
     """Sets up a pyDataverse API for upload."""
 
     # Get environment variables
     if DATAVERSE_URL is None:
-        try:
-            DATAVERSE_URL = os.environ["DATAVERSE_URL"]
-
-        except KeyError:
-            raise MissingURLException
+        raise MissingURLException
 
     if API_TOKEN is None:
-        try:
-            API_TOKEN = os.environ["DATAVERSE_API_TOKEN"]
-        except KeyError:
-            raise MissingCredentialsException
+        raise MissingCredentialsException
 
     return NativeApi(DATAVERSE_URL, API_TOKEN), DataAccessApi(DATAVERSE_URL, API_TOKEN)
 
@@ -194,7 +189,11 @@ def update_dataset(
         content_loc (Optional[str], optional): If specified, the ZIP that is used to upload will be stored at the destination provided. Defaults to None.
     """
 
-    url = f"{os.environ['DATAVERSE_URL']}/api/datasets/:persistentId/versions/:draft?persistentId={p_id}"
+    url = urljoin(
+        DATAVERSE_URL,
+        f"/api/datasets/:persistentId/versions/:draft?persistentId={p_id}",
+    )
+
     response = requests.put(
         url,
         json=json_data,
@@ -229,7 +228,8 @@ def update_dataset(
                 is_filepid=False,
             )
 
-    # Upload files that havent been added yet
-    __uploadFiles(new_files, p_id, api, content_loc)
+    if new_files:
+        # Upload files that havent been added yet
+        __uploadFiles(new_files, p_id, api, content_loc)
 
     return True
