@@ -5,7 +5,8 @@ import warnings
 import xmltodict
 import yaml
 
-from pydantic import BaseModel, validate_arguments, Field
+from copy import deepcopy
+from pydantic import BaseModel, validate_arguments, Field, AnyHttpUrl
 from typing import Dict, Any, List, Optional
 from urllib.parse import urlparse, parse_qs
 from json import dumps
@@ -17,6 +18,11 @@ from easyDataverse.tools.uploader.uploader import upload_to_dataverse, update_da
 from easyDataverse.tools.software.softwareinfo import ProgrammingLanguage
 from easyDataverse.tools.software.softwaretools import dataset_from_repository
 from easyDataverse.tools.utils import YAMLDumper, get_class
+from easyDataverse.tools.connect.connect import (
+    fetch_metadatablocks,
+    remove_child_fields_from_global,
+    create_dataverse_class,
+)
 from easyDataverse.tools.downloader.downloader import (
     download_from_dataverse_with_lib,
     download_from_dataverse_without_lib,
@@ -30,9 +36,10 @@ class Dataset(BaseModel):
     metadatablocks: Dict[str, Any] = dict()
     p_id: Optional[str] = None
     files: List[File] = Field(default_factory=list)
+    API_TOKEN: Optional[str] = Field(None)
+    DATAVERSE_URL: Optional[str] = Field(None)
 
     # ! Adders
-
     def add_metadatablock(self, metadatablock: DataverseBase) -> None:
         """Adds a metadatablock object to the dataset if it is of 'DataverseBase' type and has a metadatablock name"""
 
@@ -197,25 +204,16 @@ class Dataset(BaseModel):
     def dict(self, **kwargs):
         """Builds the basis of exports towards other formats."""
 
-        if "EASYDATAVERSE_LIB_NAME" in os.environ:
-            lib_name = os.environ["EASYDATAVERSE_LIB_NAME"]
-            data = {"lib_name": lib_name}
-        else:
-            data = {}
+        data = {"metadatablocks": {}}
 
-        # Initialize the data structure that will be dumped
         if self.p_id:
             data["dataset_id"] = self.p_id
 
-        # Convert each metadatablock to JSON
-        data.update(
-            super().dict(include={"metadatablocks"}, exclude_none=True, **kwargs)
-        )
+        for name, block in self.metadatablocks.items():
+            block = block.dict(exclude_none=True)
 
-        # Remove the '_metadatablock_name' attribute
-        for block in data["metadatablocks"].values():
-            if "_metadatablock_name" in block:
-                block.pop("_metadatablock_name")
+            if block != {}:
+                data["metadatablocks"][name] = block
 
         return data
 
@@ -235,7 +233,7 @@ class Dataset(BaseModel):
         return json.dumps(self.dict(), indent=4)
 
     def hdf5(self, path: str) -> None:
-        """Exports the dataset to an HDF5 dataset that can also be read by the API_TOKEN
+        """Exports the dataset to an HDF5 dataset that can also be read by the API
 
         Args:
             path (str): Path to the destination HDF5 files.
@@ -250,8 +248,6 @@ class Dataset(BaseModel):
         self,
         dataverse_name: str,
         content_loc: Optional[str] = None,
-        DATAVERSE_URL: Optional[str] = None,
-        API_TOKEN: Optional[str] = None,
     ) -> str:
         """Uploads a given dataset to a Dataverse installation specified in the environment variable.
 
@@ -259,8 +255,6 @@ class Dataset(BaseModel):
             dataverse_name (str): Name of the target dataverse.
             filenames (List[str], optional): File or directory names which will be uploaded. Defaults to None.
             content_loc (Optional[str], optional): If specified, the ZIP that is used to upload will be stored at the destination provided. Defaults to None.
-            DATAVERSE_URL (Optional[str], optional): Alternatively provide base url as argument. Defaults to None.
-            API_TOKEN (Optional[str], optional): Alternatively provide the api token as argument. Attention, do not use this for public scripts, otherwise it will expose your API Token. Defaults to None.
         Returns:
             str: [description]
         """
@@ -270,8 +264,8 @@ class Dataset(BaseModel):
             dataverse_name=dataverse_name,
             files=self.files,
             p_id=self.p_id,
-            DATAVERSE_URL=DATAVERSE_URL,
-            API_TOKEN=API_TOKEN,
+            DATAVERSE_URL=self.DATAVERSE_URL,
+            API_TOKEN=self.API_TOKEN,
             content_loc=content_loc,
         )
 
@@ -282,8 +276,6 @@ class Dataset(BaseModel):
         contact_name: Optional[str] = None,
         contact_mail: Optional[str] = None,
         content_loc: Optional[str] = None,
-        DATAVERSE_URL: Optional[str] = None,
-        API_TOKEN: Optional[str] = None,
     ):
         """Updates a given dataset if a p_id has been given.
 
@@ -300,38 +292,89 @@ class Dataset(BaseModel):
         """
 
         # Update contact
-        if contact_name is None and contact_mail is None:
-            # Check if there is already a contact defined
-            contact_mails = [
-                contact.email for contact in self.citation.contact if contact.email
-            ]
+        # if contact_name is None and contact_mail is None:
+        #     # Check if there is already a contact defined
+        #     contact_mails = [
+        #         contact.email for contact in self.citation.contact if contact.email
+        #     ]
 
-            if len(contact_mails) == 0:
-                raise ValueError(
-                    f"Please provide a contact name and email to update the dataset"
-                )
+        #     if len(contact_mails) == 0:
+        #         raise ValueError(
+        #             f"Please provide a contact name and email to update the dataset"
+        #         )
 
         # Check if there is a contact with the given name already in the dataset
         has_mail = False
-        for contact in self.citation.contact:
-            if contact.name == contact_name:
-                contact.email = contact_mail
-                has_mail = True
+        # for contact in self.citation.point_of_contact:
+        #     if contact.name == contact_name:
+        #         contact.email = contact_mail
+        #         has_mail = True
 
-        if has_mail == False:
-            # Assign a completely new contact if the name is new
-            self.citation.add_contact(name=contact_name, email=contact_mail)
+        # if has_mail == False:
+        #     # Assign a completely new contact if the name is new
+        #     self.citation.add_contact(name=contact_name, email=contact_mail)
 
         update_dataset(
             json_data=self.dataverse_dict()["datasetVersion"],
             p_id=self.p_id,
             files=self.files,
-            DATAVERSE_URL=DATAVERSE_URL,
-            API_TOKEN=API_TOKEN,
+            DATAVERSE_URL=self.DATAVERSE_URL,
+            API_TOKEN=self.API_TOKEN,
             content_loc=content_loc,
         )
 
     # ! Initializers
+    @classmethod
+    def connect(cls, url: AnyHttpUrl, API_TOKEN: Optional[str] = None) -> "Dataset":
+        """Connects to a Dataverse installation and adds all metadtablocks as classes.
+
+        You can access each of the given metadatablocks and
+        fill these with your metadata by accessing via the
+        common pythonic way to attributes. Here is an example:
+
+        dataset.citation.title = "Title" -> Will set a title
+
+        Sub-fields that are made of multiple arguments can either
+        be accessed the same way as other fields (its just nested)
+        or in the case of "multiple" be added via dedicated add-methods.
+
+        dataset.citation.description(text="Description") -> Adds a decription
+
+        Args:
+            url (AnyHttpUrl): URL to the Dataverse installation
+
+        Raises:
+            requests.HTTPError: When the URL does not point to a valid DV
+
+        Returns:
+            Dataset: Object that contains all metadatablocks
+        """
+
+        dataset = cls()
+        all_blocks = fetch_metadatablocks(url)
+
+        for metadatablock in all_blocks.values():
+
+            metadatablock = deepcopy(metadatablock)
+            fields = remove_child_fields_from_global(metadatablock.data.fields)
+            primitives = list(
+                filter(lambda field: "childFields" not in field, fields.values())
+            )
+            compounds = list(
+                filter(lambda field: "childFields" in field, fields.values())
+            )
+
+            block_cls = create_dataverse_class(
+                metadatablock.data.name, primitives, compounds
+            )
+            block_cls._metadatablock_name = metadatablock.data.name
+
+            dataset.add_metadatablock(block_cls())
+
+        dataset.DATAVERSE_URL = url
+        dataset.API_TOKEN = API_TOKEN
+
+        return dataset
 
     @classmethod
     @validate_arguments
@@ -613,6 +656,11 @@ class Dataset(BaseModel):
         return dataset
 
     # ! Utilities
+    def list_metadatablocks(self):
+        """Lists all metadatablocks present in this dataset instance"""
+
+        for block in self.metadatablocks.values():
+            print(block._metadatablock_name)
 
     def list_files(self):
         """Lists all files present in the dataset for inspection"""
