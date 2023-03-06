@@ -27,6 +27,7 @@ setup(
         "h5py",
         "typer",
         "python-forge",
+        "anytree",
     ],
     extras_require={"test": ["pytest-cov"]},
 )
