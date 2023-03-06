@@ -2,9 +2,10 @@ import json
 import yaml
 import xmltodict
 
+from anytree import Node, RenderTree
 from enum import Enum
 from pydantic import BaseModel
-from typing import Dict
+from typing import Dict, Optional
 
 
 class DataverseBase(BaseModel):
@@ -65,7 +66,9 @@ class DataverseBase(BaseModel):
         # Get the dictionary function from pyDantic
         fields = super().dict(**dictkwargs)
 
-        return {key: value for key, value in fields.items() if value != []}
+        return {
+            key: value for key, value in fields.items() if value != {} and value != []
+        }
 
     def xml(self, **dictkwargs) -> str:
         """Returns an XML representation of the dataverse object."""
@@ -106,13 +109,16 @@ class DataverseBase(BaseModel):
             properties = field.field_info.extra
             value = getattr(self, attr)
 
-            if value == [] or value is None:
+            if self.is_empty(value):
                 # Guard clause to catch empty compounds
                 continue
 
             # Process compounds
             if properties["typeClass"] == "compound":
-                value = [field.dataverse_dict() for field in value]
+                if isinstance(value, list):
+                    value = [field.dataverse_dict() for field in value]
+                else:
+                    value = value.dataverse_dict()
 
             # Assign everything
             if isinstance(value, list):
@@ -126,12 +132,12 @@ class DataverseBase(BaseModel):
                         "multiple": properties["multiple"],
                         "typeClass": properties["typeClass"],
                         "typeName": properties["typeName"],
-                        "value": value if isinstance(value, list) else str(value),
+                        "value": value,
                     }
                 }
             )
 
-        if hasattr(self, "_metadatablock_name"):
+        if hasattr(self, "_metadatablock_name") and list(json_obj.values()):
             return {
                 getattr(self, "_metadatablock_name"): {
                     "fields": list(json_obj.values())
@@ -143,3 +149,48 @@ class DataverseBase(BaseModel):
     def to_dataverse_json(self, indent: int = 2) -> str:
         """Returns a JSON formatted representation of the dataverse object."""
         return json.dumps(self.dataverse_dict(), indent=indent)
+
+    @staticmethod
+    def is_empty(value):
+        """Checks whether a given value is None or empty"""
+
+        if value is None:
+            return True
+        elif value == []:
+            return True
+        elif hasattr(value, "__fields__") and value.dict(exclude_none=True) == {}:
+            return True
+
+        return False
+
+    def __repr__(self) -> str:
+        """Returns a tree view of the"""
+
+        return self.yaml()
+
+    @classmethod
+    def info(cls) -> None:
+        """Displays the schema tree described within this class"""
+
+        print(RenderTree(cls._create_tree()).by_attr("name"))
+
+    @classmethod
+    def _create_tree(cls, parent: Optional[Node] = None) -> Node:
+        """Creates a tree from the given metadatablock/compound"""
+
+        if parent is None:
+            root = Node(cls.__name__)
+            root.parent = parent
+        else:
+            root = parent
+
+        for name, field in cls.__fields__.items():
+            node = Node(name)
+            node.typeName = field.field_info.extra["typeName"]
+            node.typeClass = field.field_info.extra["typeClass"]
+            node.parent = root
+
+            if hasattr(field.type_, "__fields__"):
+                field.type_._create_tree(parent=node)
+
+        return root
