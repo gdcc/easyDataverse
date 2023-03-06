@@ -28,6 +28,7 @@ setup(
         "typer",
         "python-forge",
         "anytree",
+        "dottet-dict",
     ],
     extras_require={"test": ["pytest-cov"]},
 )
