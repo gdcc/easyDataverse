@@ -67,7 +67,7 @@ def fetch_single_metadatablock(url: AnyHttpUrl, name: str):
 
 
 def create_dataverse_class(
-    name: str, primitives: List[Dict], compounds: List = None
+    name: str, primitives: List[Dict], compounds: List = None, common_part=""
 ) -> Callable:
     """Parses the parameters given by a dataverse metadatablock definition
     and dynamically creates a class that can be used to report data
@@ -107,7 +107,7 @@ def create_dataverse_class(
     attributes.update(
         {
             process_name(compound.name, common_part): create_compound(
-                compound, add_functions
+                compound, add_functions, common_part
             )
             for compound in compounds
         }
@@ -122,7 +122,9 @@ def create_dataverse_class(
     return dv_class
 
 
-def create_compound(compound: Dict, add_functions: Dict) -> Tuple[Callable, FieldInfo]:
+def create_compound(
+    compound: Dict, add_functions: Dict, common_part: str = ""
+) -> Tuple[Callable, FieldInfo]:
     """Takes a compound definition, creates a corresponding data type and an add_function
 
     Args:
@@ -134,7 +136,7 @@ def create_compound(compound: Dict, add_functions: Dict) -> Tuple[Callable, Fiel
     """
 
     # Get all the names
-    attribute_name = camel_to_snake(compound.name)
+    attribute_name = process_name(compound.name, common_part)
     sub_cls = create_dataverse_class(compound.title, compound.childFields.values())
     dtype = get_field_type(compound, sub_cls)
     field_meta = prepare_field_meta(compound)
