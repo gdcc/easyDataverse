@@ -1,13 +1,17 @@
+import os
 import json
 import yaml
 import xmltodict
 
 from enum import Enum
 from pydantic import BaseModel
-from typing import Dict
+from typing import Dict, Optional
 
 
 class DataverseBase(BaseModel):
+
+    _metadatablock_name: str
+
     class Config:
         validate_all = True
         validate_assignment = True
@@ -143,3 +147,28 @@ class DataverseBase(BaseModel):
     def to_dataverse_json(self, indent: int = 2) -> str:
         """Returns a JSON formatted representation of the dataverse object."""
         return json.dumps(self.dataverse_dict(), indent=indent)
+
+    @classmethod
+    def json_schema(
+        cls, path: Optional[str] = None, indent: int = 2, **kwargs
+    ) -> Optional[str]:
+        """Exports a metadatablock as a JSON schema.
+
+        Args:
+            path (Optional[str], optional): If specified, writes the schema to the given path as '[NAME].schema.json'. Defaults to None.
+        """
+
+        schema = cls.schema_json(indent=indent, **kwargs)
+
+        if path is None:
+            return schema
+
+        assert hasattr(
+            cls, "_metadatablock_name"
+        ), f"Given class of type '{cls.__name__}' is not a valid metadatablock."
+
+        os.mkdirs(path)
+        fpath = os.path.join(path, f"{cls._metadatablock_name}.schema.json")
+
+        with open(fpath, "w") as file:
+            file.write(schema)

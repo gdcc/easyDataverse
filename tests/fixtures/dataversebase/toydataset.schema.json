@@ -1,0 +1,59 @@
+{
+    "title": "ToyDataset",
+    "type": "object",
+    "properties": {
+      "compound": {
+        "title": "Compound",
+        "description": "Some compound field",
+        "multiple": false,
+        "typeClass": "compound",
+        "typeName": "fooCompound",
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/Compound"
+        }
+      },
+      "foo": {
+        "title": "Foo",
+        "description": "Some primitive field",
+        "multiple": false,
+        "typeClass": "primitive",
+        "typeName": "fooField",
+        "type": "string"
+      },
+      "some_enum": {
+        "description": "Some enum field",
+        "multiple": false,
+        "typeClass": "controlledVocabulary",
+        "typeName": "fooEnum",
+        "allOf": [
+          {
+            "$ref": "#/definitions/SomeEnum"
+          }
+        ]
+      }
+    },
+    "definitions": {
+      "Compound": {
+        "title": "Compound",
+        "type": "object",
+        "properties": {
+          "bar": {
+            "title": "Bar",
+            "description": "Another primitive field",
+            "multiple": false,
+            "typeClass": "primitive",
+            "typeName": "fooCompoundField",
+            "type": "string"
+          }
+        }
+      },
+      "SomeEnum": {
+        "title": "SomeEnum",
+        "description": "Some enum field",
+        "enum": [
+          "enum"
+        ]
+      }
+    }
+  }
