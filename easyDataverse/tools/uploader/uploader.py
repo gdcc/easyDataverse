@@ -115,9 +115,13 @@ def __uploadFiles(
     chunks = []
 
     for index, file in enumerate(files):
+
         if file.local_path and not file.file_pid:
             has_content = True
-            zf.writestr(file.filename, open(file.local_path, "rb").read())
+            zf.writestr(
+                os.path.join(file.dv_dir, file.filename),
+                open(file.local_path, "rb").read(),
+            )
 
         if (index + 1) % 999 == 0:
             # Make chunks of 999 files each
@@ -210,6 +214,7 @@ def update_dataset(
     for file in files:
         if not file.file_pid:
             new_files.append(file)
+            continue
 
         # Get the metadata of the file
         file_dir = os.path.dirname(file.filename)

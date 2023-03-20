@@ -4,12 +4,16 @@ import os
 import warnings
 import xmltodict
 import yaml
+import requests
 
 from copy import deepcopy
 from pydantic import BaseModel, validate_arguments, Field, AnyHttpUrl
 from typing import Dict, Any, List, Optional
 from urllib.parse import urlparse, parse_qs
 from json import dumps
+from anytree import Node, findall_by_attr
+from dotted_dict import DottedDict
+from urllib.parse import urljoin
 
 from easyDataverse.core.file import File
 from easyDataverse.core.exceptions import MissingCredentialsException
@@ -62,7 +66,7 @@ class Dataset(BaseModel):
         # ... and to the __dict__
         setattr(self, block_name, metadatablock)
 
-    def add_file(self, dv_path: str, local_path: str, description: str = ""):
+    def add_file(self, local_path: str, dv_dir: str = "", description: str = ""):
         """Adds a file to the dataset based on the provided path.
 
         Args:
@@ -71,8 +75,7 @@ class Dataset(BaseModel):
         """
 
         # Create the file
-        filename = os.path.basename(dv_path)
-        dv_dir = os.path.dirname(dv_path)
+        filename = os.path.basename(local_path)
         file = File(
             filename=filename,
             dv_dir=dv_dir,
@@ -86,7 +89,11 @@ class Dataset(BaseModel):
             raise FileExistsError(f"File has already been added to the dataset")
 
     def add_directory(
-        self, dirpath: str, include_hidden: bool = False, ignores: List[str] = []
+        self,
+        dirpath: str,
+        dv_dir: str = "",
+        include_hidden: bool = False,
+        ignores: List[str] = [],
     ) -> None:
         """Adds an entire directory including subdirectories to Dataverse.
 
@@ -133,11 +140,13 @@ class Dataset(BaseModel):
 
                 if dirpath != ".":
                     # Just catch the structure inside the dir
-                    dv_dir = os.path.dirname(filepath.split(dirpath)[-1])
+                    dv_pre = os.path.join(
+                        dv_dir, os.path.dirname(filepath.split(dirpath)[-1])
+                    )
                 else:
-                    dv_dir = None
+                    dv_pre = dv_dir
 
-                data_file = File(filename=filename, local_path=filepath, dv_dir=dv_dir)
+                data_file = File(filename=filename, local_path=filepath, dv_dir=dv_pre)
 
                 # Substitute new files with old files
                 found = False
@@ -407,6 +416,60 @@ class Dataset(BaseModel):
             api_token=api_token,
             download_files=download_files,
         )
+
+    def from_doi(self, doi: str):
+        """Retrieves dataset from DOI if connected to an installation"""
+
+        fetch_path = f"/api/datasets/:persistentId/?persistentId={doi}"
+        fetch_url = urljoin(self.DATAVERSE_URL, fetch_path)
+
+        header = {"X-Dataverse-key": self.API_TOKEN}
+
+        remote_ds = DottedDict(requests.get(fetch_url, headers=header).json())
+        self.p_id = remote_ds.data.latestVersion.datasetPersistentId
+        blocks = remote_ds.data.latestVersion.metadataBlocks
+
+        for name, block in blocks.items():
+            metadatablock = self.metadatablocks[name]
+
+            tree = metadatablock._create_tree()
+            content = self.extract_data(block.fields, tree)
+
+            self.metadatablocks[name] = metadatablock.__class__.parse_obj(content)
+            setattr(self, name, self.metadatablocks[name])
+
+        return self
+
+    def extract_data(self, fields: List, tree: Node):
+        """
+        Extracts data from a metadatablock that has been fetched as a
+        dataset from a Dataverse installation.
+        """
+
+        if all(not isinstance(entry, dict) for entry in fields):
+            return fields
+
+        data = {}
+
+        for field in fields:
+            node = findall_by_attr(tree, field.typeName, "typeName")[0]
+            name = node.name
+            dvtype = node.typeClass
+
+            if dvtype.lower() == "compound":
+                data[name] = self.process_compound(field.value, tree)
+            else:
+                data[name] = field.value
+
+        return data
+
+    def process_compound(self, compound, tree):
+        """Processes give field value according to its 'multiple' state"""
+
+        if isinstance(compound, list):
+            return [self.extract_data(list(entry.values()), tree) for entry in compound]
+
+        return self.extract_data(compound)
 
     @classmethod
     @validate_arguments
