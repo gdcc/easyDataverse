@@ -158,17 +158,16 @@ class DataverseBase(BaseModel):
             path (Optional[str], optional): If specified, writes the schema to the given path as '[NAME].schema.json'. Defaults to None.
         """
 
-        schema = cls.schema_json(indent=indent, **kwargs)
+        schema = cls.schema()
+
+        if "_metadatablock_name" in schema["properties"]:
+            del schema["properties"]["_metadatablock_name"]
 
         if path is None:
             return schema
-
-        assert hasattr(
-            cls, "_metadatablock_name"
-        ), f"Given class of type '{cls.__name__}' is not a valid metadatablock."
 
         os.mkdirs(path)
         fpath = os.path.join(path, f"{cls._metadatablock_name}.schema.json")
 
         with open(fpath, "w") as file:
-            file.write(schema)
+            file.write(json.dumps(schema, indent=indent))

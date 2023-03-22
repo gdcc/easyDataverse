@@ -96,6 +96,6 @@ class TestDataverseBase:
             "./tests/generator_test/pySomeTest/pySomeTest/metadatablocks/toyDataset.py",
         )
 
-        assert json.loads(block.ToyDataset.json_schema()) == json.loads(
+        assert block.ToyDataset.json_schema() == json.loads(
             metadatablock_json_schema
         ), f"Metadatablock JSON schema is wrong."
