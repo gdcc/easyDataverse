@@ -65,3 +65,10 @@ def dataverse_base_class():
         bar: str
 
     return Test
+
+
+@pytest.fixture
+def metadatablock_json_schema():
+    """Sets up a metadatablock json schema"""
+
+    return open("./tests/fixtures/dataversebase/toydataset.schema.json").read()
