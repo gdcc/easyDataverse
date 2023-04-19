@@ -22,9 +22,8 @@ def camel_to_snake(name):
 
 
 def spaced_to_snake(name) -> str:
-
     # Clean the title
-    name = re.sub(r"-|\?", "", name)
+    name = re.sub(r"-|\?", "_", name)
     name = name.replace(r"/", " ")
 
     return "_".join([word.lower() for word in name.replace("-", " ").split(" ")])
@@ -67,9 +66,7 @@ def generate_JSON_schema(
     parents = set(fields.parent)
 
     for parent in parents:
-
         if str(parent) == "nan":
-
             # Process any primitive field to JSON
             primitives = fields[
                 (fields["parent"].isna()) & (fields["fieldType"] != "none")
