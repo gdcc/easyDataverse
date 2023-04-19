@@ -43,7 +43,6 @@ class Dataset(BaseModel):
             )
 
         if hasattr(metadatablock, "_metadatablock_name") is False:
-
             raise TypeError(
                 f"The provided class {metadatablock.__class__.__name__} has no metadatablock name and is thus not compatible with this function."
             )
@@ -98,7 +97,6 @@ class Dataset(BaseModel):
             )
 
         for path, _, files in os.walk(dirpath):
-
             if self._has_hidden_dir(path, dirpath) and not include_hidden:
                 # Checks whether the current path from the
                 # directory tree contains any hidden dirs
@@ -467,7 +465,7 @@ class Dataset(BaseModel):
                 kwargs["api_token"] = os.environ["DATAVERSE_API_TOKEN"]
             except KeyError:
                 warnings.warn(
-                    "No 'API_TOKEN' found in the environment. Please be aware, that you might not have the rights to download this dataset."
+                    "No 'DATAVERSE_API_TOKEN' found in the environment. Please be aware, that you might not have the rights to download this dataset."
                 )
 
         return download_from_dataverse_without_lib(**kwargs)
@@ -541,7 +539,6 @@ class Dataset(BaseModel):
 
     @classmethod
     def from_dict(cls, data: dict, use_id: bool = True):
-
         # Initialize blank dataset
         # and get lib_name for imports
         dataset = cls()
@@ -554,7 +551,6 @@ class Dataset(BaseModel):
 
         # Iteratively import the modules and add blocks
         for module_name, fields in data["metadatablocks"].items():
-
             # Adapt module name to the namespace of generated code
             module_name = f".metadatablocks.{module_name}"
 
