@@ -189,7 +189,7 @@ def _create_compound_class(field, lookup):
     cls.__name__ = cls_name
 
     # Create a new type from this
-    return name, description, cls
+    return _clean_name(name), description, cls
 
 
 def _parse_compound_fields(data: List, lookup):
@@ -200,9 +200,15 @@ def _parse_compound_fields(data: List, lookup):
     for member in data:
         for primitive in member.values():
             name, field = _parse_primitive(primitive, lookup)
+
             parsed_fields[name] = field
 
     return parsed_fields
+
+
+def _clean_name(name):
+    """Removes anything that is not a valid variable name"""
+    return re.sub(r"-|\?|\(|\)|\[|\]|\.\\|\/", "", name)
 
 
 def _parse_primitive(data: Dict, lookup: Dict):
@@ -218,7 +224,7 @@ def _parse_primitive(data: Dict, lookup: Dict):
 
     data["description"] = lookup[data["typeName"]]["description"]
 
-    return name, _create_primitive_field(lookup=lookup, **data)
+    return (_clean_name(name), _create_primitive_field(lookup=lookup, **data))
 
 
 def _create_primitive_field(lookup: Dict, **kwargs):
@@ -288,7 +294,6 @@ def populate_block_values(block_cls: DataverseBase, block_json: Dict):
         attr_name = _find_attribute(block_cls, field["typeName"])
 
         if field_type == "compound":
-
             for entry in field["value"]:
                 sub_class = _get_sub_class(block_cls, attr_name)
                 kwargs = {
