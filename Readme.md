@@ -1,6 +1,6 @@
 <h1 align="center">
   <img src="https://github.com/gdcc/easyDataverse/blob/main/static/logo.png" width=300 alt="EasyDataverse"></br>
-  <img src="https://img.shields.io/badge/EasyDataverse-0.3.9-blue" alt="v0.3.6">
+  <img src="https://img.shields.io/badge/EasyDataverse-0.3.10-blue" alt="v0.3.6">
   <img src="https://github.com/gdcc/easyDataverse/actions/workflows/build.yaml/badge.svg" alt="Build Badge">
 </a>
 </h1>
