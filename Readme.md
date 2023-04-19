@@ -119,7 +119,7 @@ dataset = Dataset.from_url("https://my.dataverse.installation/link/to/dataset")
 # or
 
 dataset = Dataset.from_dataverse_doi(
-  doi="doi:my_persistent_id"
+  doi="doi:my_persistent_id",
   dataverse_url="https://my.dataverse.installation"
 )
 ```
