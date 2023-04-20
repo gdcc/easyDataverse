@@ -124,6 +124,8 @@ dataset = Dataset.from_dataverse_doi(
 )
 ```
 
+If you'd like to fetch the metadata of a `Dataset` without downloading the files, add the `download_files = False` parameter to the functions.
+
 EasyDataverse will infer schemes from the installations REST-API and accordingly generates classes in memory. Thus, you can handle datasets in the same way as with any generated API. For instance, you can edit a fetched dataset and upload it to any other installation.
 
 **🚨 Important note**
