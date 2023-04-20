@@ -209,7 +209,7 @@ def _parse_compound_fields(data: List, lookup):
 def _clean_name(name):
     """Removes anything that is not a valid variable name"""
 
-    return re.sub(r"\?|\(|\)|\[|\]|\.\\|\/", "-", name)
+    return re.sub(r"\-|\?|\(|\)|\[|\]|\.\\|\/", "_", name)
 
 
 def _parse_primitive(data: Dict, lookup: Dict):
