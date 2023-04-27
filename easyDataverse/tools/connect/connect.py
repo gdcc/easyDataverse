@@ -51,7 +51,7 @@ def fetch_metadatablocks(url: AnyHttpUrl) -> Dict:
     }
 
 
-@lru_cache
+@lru_cache()
 def fetch_single_metadatablock(url: AnyHttpUrl, name: str):
     """Fetches a single metadatablock from an installation"""
 
