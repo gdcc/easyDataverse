@@ -28,7 +28,7 @@ TYPE_MAPPING = {
 }
 
 
-@lru_cache
+@lru_cache()
 def fetch_metadatablocks(url: AnyHttpUrl) -> Dict:
     """Fetches all metadatablocks from a given URL"""
 
