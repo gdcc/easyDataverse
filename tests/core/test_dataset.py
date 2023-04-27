@@ -45,29 +45,21 @@ class TestFileAddition:
         dataset = Dataset()
 
         # Add a random file
-        dataset.add_file(
-            dv_path="mydir/toydataset.py", local_path=".tests/fixture/toydataset.py"
-        )
+        dataset.add_file(dv_dir="mydir", local_path=".tests/fixture/toydataset.py")
 
         assert isinstance(
             dataset.files[0], File
         ), f"Expected File type, got {dataset.files[0].__class__.__name__}"
 
-        assert (
-            dataset.files[0].filename == "toydataset.py"
-        ), "Filename has changed"
-        assert (
-            dataset.files[0].dv_dir == "mydir"
-        ), "Dataverse directory has changed"
+        assert dataset.files[0].filename == "toydataset.py", "Filename has changed"
+        assert dataset.files[0].dv_dir == "mydir", "Dataverse directory has changed"
         assert (
             dataset.files[0].local_path == ".tests/fixture/toydataset.py"
         ), "Local path is incorrect"
 
         # Test adding the same file again -> Should result in an error
         with pytest.raises(FileExistsError):
-            dataset.add_file(
-                dv_path="mydir/toydataset.py", local_path=".tests/fixture/toydataset.py"
-            )
+            dataset.add_file(dv_dir="mydir", local_path=".tests/fixture/toydataset.py")
 
     def test_add_directory_fail(self):
         """Tests whether the addition of a directory that doesnt exist fails"""
