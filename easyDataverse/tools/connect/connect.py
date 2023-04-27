@@ -5,7 +5,7 @@ import requests
 import sys
 
 from enum import Enum
-from functools import cache
+from functools import lru_cache
 from datetime import date
 from urllib.parse import urljoin, urlparse
 from dotted_dict import DottedDict
@@ -29,7 +29,7 @@ TYPE_MAPPING = {
 }
 
 
-@cache
+@lru_cache()
 def fetch_metadatablocks(url: AnyHttpUrl) -> Dict:
     """Fetches all metadatablocks from a given URL"""
 
