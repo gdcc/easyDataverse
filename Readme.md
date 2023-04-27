@@ -30,6 +30,15 @@ cd easyDataverse
 python setup.py install
 ```
 
+### Additional packages
+
+EasyDataverse provides certain parsers that automatically extract data and adds it to the appropriate metadatablocks. These may require additional packages which need to be installed for the functionalities to work. In order to use any of these, use the following commands to install dependencies.
+
+```
+# NetCDF
+python -m pip install "easyDataverse[netcdf]"
+```
+
 ## ⚙️ Code generation
 
 EasyDataverse allows you to generate code based on given metadata configuration TSV files that are typically found in any Dataverse installation. In order to do so, you can use the dedicated command line interface:

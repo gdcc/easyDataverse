@@ -1,5 +1,6 @@
 ToyDataset:
   foo: null
   some_enum: null
+  field_metadatablock_name: null
   compound:
     - bar: null

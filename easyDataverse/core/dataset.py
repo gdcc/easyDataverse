@@ -16,8 +16,8 @@ from dotted_dict import DottedDict
 from urllib.parse import urljoin
 
 from easyDataverse.core.file import File
-from easyDataverse.core.exceptions import MissingCredentialsException
 from easyDataverse.core.base import DataverseBase
+from easyDataverse.tools.parsers.netcdf import parse_netcdf
 from easyDataverse.tools.uploader.uploader import upload_to_dataverse, update_dataset
 from easyDataverse.tools.software.softwareinfo import ProgrammingLanguage
 from easyDataverse.tools.software.softwaretools import dataset_from_repository
@@ -54,7 +54,6 @@ class Dataset(BaseModel):
             )
 
         if hasattr(metadatablock, "_metadatablock_name") is False:
-
             raise TypeError(
                 f"The provided class {metadatablock.__class__.__name__} has no metadatablock name and is thus not compatible with this function."
             )
@@ -112,7 +111,6 @@ class Dataset(BaseModel):
             )
 
         for path, _, files in os.walk(dirpath):
-
             if self._has_hidden_dir(path, dirpath) and not include_hidden:
                 # Checks whether the current path from the
                 # directory tree contains any hidden dirs
@@ -363,7 +361,6 @@ class Dataset(BaseModel):
         all_blocks = fetch_metadatablocks(url)
 
         for metadatablock in all_blocks.values():
-
             metadatablock = deepcopy(metadatablock)
             fields = remove_child_fields_from_global(metadatablock.data.fields)
             primitives = list(
@@ -647,7 +644,6 @@ class Dataset(BaseModel):
 
     @classmethod
     def from_dict(cls, data: dict, use_id: bool = True):
-
         # Initialize blank dataset
         # and get lib_name for imports
         dataset = cls()
@@ -660,7 +656,6 @@ class Dataset(BaseModel):
 
         # Iteratively import the modules and add blocks
         for module_name, fields in data["metadatablocks"].items():
-
             # Adapt module name to the namespace of generated code
             module_name = f".metadatablocks.{module_name}"
 
@@ -717,6 +712,34 @@ class Dataset(BaseModel):
         dataset.add_directory(path, ignores=ignore, include_hidden=False)
 
         return dataset
+
+    # ! Parsers
+    def parse_netcdf_file(self, path: str) -> None:
+        """Parse a NetCDF file and add it's content to the dataset.
+
+        Args:
+            path (str): Path to the NetCDF file.
+        """
+
+        # Check if the metadata block is present
+        if not hasattr(self, "geospatial"):
+            raise AttributeError(
+                "Attempting to add bounding box to dataset that does not have a 'geospatial' metadatablock. \
+                    Please check your installation to support the 'geospatial' metadatablock.'"
+            )
+
+        data = parse_netcdf(path)
+
+        if "bounding_box" in data:
+            bounding_box = data["bounding_box"]
+            self.geospatial.add_bounding_box(
+                east_longitude=bounding_box.east_longitude,
+                west_longitude=bounding_box.west_longitude,
+                north_longitude=bounding_box.north_longitude,
+                south_longitude=bounding_box.south_longitude,
+            )
+
+            print("Added bounding box to dataset.")
 
     # ! Utilities
     def list_metadatablocks(self):
