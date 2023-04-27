@@ -34,5 +34,6 @@ setup(
     extras_require={
         "test": ["pytest-cov"],
         "netcdf": ["netcdf4"],
+        "all": ["pytest-cov", "netcdf4"],
     },
 )
