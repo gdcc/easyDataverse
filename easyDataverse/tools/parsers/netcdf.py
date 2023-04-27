@@ -5,7 +5,7 @@ try:
     import netCDF4 as nc
 except ImportError:
     raise ImportError(
-        "NetCDF4 is required to use this module. You may need to install it with 'pip install netCDF4'"
+        "NetCDF4 is required to use this module. You may need to install it with 'pip install netcdf4'"
     )
 
 
