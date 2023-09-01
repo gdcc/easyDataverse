@@ -1,4 +1,3 @@
-from easyDataverse.core import Dataset
-from easyDataverse.tools import ProgrammingLanguage
+from easyDataverse.core import Dataset, Dataverse
 
 __version__ = "0.3.8"

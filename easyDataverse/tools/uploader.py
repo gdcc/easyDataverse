@@ -67,14 +67,14 @@ def upload_to_dataverse(
         p_id = response.json()["data"]["persistentId"]
 
         if files:
-            __uploadFiles(files, p_id, api, content_loc)
+            _uploadFiles(files, p_id, api, content_loc)  # type: ignore
 
         if DATAVERSE_URL:
             print(f"{DATAVERSE_URL}/dataset.xhtml?persistentId={p_id}")
         else:
             print(f"{os.environ['DATAVERSE_URL']}/dataset.xhtml?persistentId={p_id}")
 
-        return p_id
+        return p_id  # type: ignore
 
     else:
         raise Exception("Could not upload")
@@ -93,7 +93,7 @@ def _initialize_pydataverse(DATAVERSE_URL: str, API_TOKEN: str):
     return NativeApi(DATAVERSE_URL, API_TOKEN), DataAccessApi(DATAVERSE_URL, API_TOKEN)
 
 
-def __uploadFiles(
+def _uploadFiles(
     files: List[File], p_id: str, api: DataAccessApi, content_loc: Optional[str] = None
 ) -> None:
     """Uploads any file to a dataverse dataset.
@@ -115,7 +115,6 @@ def __uploadFiles(
     chunks = []
 
     for index, file in enumerate(files):
-
         if file.local_path and not file.file_pid:
             has_content = True
             zf.writestr(
@@ -235,6 +234,6 @@ def update_dataset(
 
     if new_files:
         # Upload files that havent been added yet
-        __uploadFiles(new_files, p_id, api, content_loc)
+        _uploadFiles(new_files, p_id, api, content_loc)
 
     return True

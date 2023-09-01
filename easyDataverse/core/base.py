@@ -100,7 +100,6 @@ class DataverseBase(BaseModel):
         json_obj = {}
 
         for attr, field in self.__fields__.items():
-
             if any(name in attr for name in ["add_", "_metadatablock_name"]):
                 # Only necessary for blind fetch
                 continue
@@ -162,11 +161,6 @@ class DataverseBase(BaseModel):
             return True
 
         return False
-
-    def __repr__(self) -> str:
-        """Returns a tree view of the"""
-
-        return self.yaml()
 
     @classmethod
     def info(cls) -> None:
