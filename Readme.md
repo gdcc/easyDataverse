@@ -64,7 +64,7 @@ dataset.add_directory(dirpath="./my_directory", dv_dir="some/dir")
 dataset.upload("my_dataverse_id")
 ```
 
-### Dataset download
+### Dataset download and update
 
 EasyDataset allows you to download datasets from any Dataverse installation. The downloaded dataset is represented as an object oriented structure and can be used to update metadata/files, export a dataset to various formats or use it in subsequent applications.
 
@@ -83,7 +83,14 @@ dataset, dataverse = Dataverse.from_ds_url(
     api_token="MY_API_TOKEN"
 )
 
-print(dataset) # Displays the content 
+# Display the content of the dataset
+print(dataset) 
+
+# Update metadata
+dataset.citation.title = "My even nicer dataset"
+
+# Synchronize with the dataverse instance
+dataset.update()
 ```
 
 ## 📖 Documentation and more examples
