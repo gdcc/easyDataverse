@@ -43,7 +43,7 @@ from easyDataverse import Dataverse
 # Connect to a Dataverse installation
 dataverse = Dataverse(
   server_url="https://demo.dataverse.org",
-  api_token=MY_API_TOKEN,
+  api_token="MY_API_TOKEN",
 )
 
 # Intiialize a dataset
@@ -79,7 +79,8 @@ dataset = dataverse.load_dataset(
 
 # Method 2: Download via URL
 dataset, dataverse = Dataverse.from_ds_url(
-  
+    url="https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.70122/XX/XXXXX&version=DRAFT",
+    api_token="MY_API_TOKEN"
 )
 
 print(dataset) # Displays the content 
