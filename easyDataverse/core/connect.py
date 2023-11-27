@@ -304,11 +304,10 @@ def remove_child_fields_from_global(fields: Dict) -> Dict:
     """Removes fields that belong to a compound from the global scope"""
 
     compounds = list(filter(lambda field: "childFields" in field, fields.values()))
-
     for compound in compounds:
-        deque(
-            map(lambda child_name: fields.pop(child_name), compound.childFields.keys())
-        )
+        for child_name in compound.childFields.keys():
+            if child_name in fields:
+                fields.pop(child_name)
 
     return fields
 
