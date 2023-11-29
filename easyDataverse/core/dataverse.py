@@ -138,7 +138,9 @@ class Dataverse(BaseModel):
 
         major, minor, *_ = response.json()["data"]["version"].split(".")
 
-        if int(major) >= 5 and int(minor) >= 13:
+        if int(major) >= 6:
+            return True
+        elif int(major) >= 5 and int(minor) >= 13:
             return True
 
         return False
