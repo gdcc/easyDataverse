@@ -1,4 +1,5 @@
 import copy
+import json
 import forge
 import re
 import requests
@@ -60,7 +61,7 @@ def fetch_dataset(p_id: str, dataverse_url: str, api_token: Optional[str] = None
         Dict: Dataverse JSON as a dictionary representation
     """
     if dataverse_url.endswith("/"):
-        dataverse_url = dataverse_url[0:-1]
+        dataverse_url = dataverse_url.rstrip("/")
 
     if api_token:
         api = NativeApi(dataverse_url, api_token)
@@ -96,7 +97,9 @@ def create_block_definitions(block_name, block, dataverse_url):
 
     # Now, create the class
     block_cls = create_model(
-        block_name.capitalize(), __base__=(DataverseBase,), **cls_def
+        block_name.capitalize(),
+        __base__=(DataverseBase,),
+        **cls_def,
     )()
 
     # Add metadatablock_name
@@ -122,6 +125,8 @@ def _fetch_lookup(dataverse_url: str, block_name: str):
     url = f"{dataverse_url}/api/metadatablocks/{block_name}"
     response = requests.get(url)
     block_data = response.json()["data"]
+    fields = {}
+
     return block_data["fields"]
 
 
@@ -154,7 +159,7 @@ def _process_compound(field, lookup, cls_def, add_funs):
         dtype = Optional[cls]
         field_meta["default"] = None
 
-    field_name = lookup[field["typeName"]]["title"]
+    field_name = _clean_name(lookup[field["typeName"]]["title"])
     field_name = "".join([name.capitalize() for name in field_name.split(" ")])
     field_name = _camel_to_snake(field_name)
 
@@ -175,10 +180,14 @@ def _create_compound_class(field, lookup):
     """Creates a compound class based on the primitives that it is made up from."""
 
     # Get metadata from lookup
+    lookup = copy.deepcopy(lookup)
     field_meta = lookup[field["typeName"]]
-    name = field_meta["title"]
+    name = _clean_name(field_meta["title"])
     cls_name = _snake_to_camel(name.replace(" ", "_"))
     description = field_meta["description"]
+
+    if "childFields" in field_meta:
+        lookup = field_meta["childFields"]
 
     # Get all fields
     fields = _parse_compound_fields(field["value"], lookup)
@@ -208,8 +217,7 @@ def _parse_compound_fields(data: List, lookup):
 
 def _clean_name(name):
     """Removes anything that is not a valid variable name"""
-
-    return re.sub(r"\-|\?|\(|\)|\[|\]|\.\\|\/", "_", name)
+    return re.sub(r"\-|\?|\(|\)|\[|\]|\.\\|\/|\&", "_", name)
 
 
 def _parse_primitive(data: Dict, lookup: Dict):
@@ -252,7 +260,7 @@ def _generate_add_method(target_cls, field):
     return forge.sign(
         forge.self,
         *[
-            forge.kwarg(name, type=dtype, default=forge.empty)
+            forge.kwarg(name.replace("&", ""), type=dtype, default=forge.empty)
             for name, dtype in target_cls.__annotations__.items()
         ],
         forge.kwarg("_target_cls", default=target_cls, bound=True),
@@ -279,6 +287,11 @@ def _camel_to_snake(name):
 def _snake_to_camel(name):
     """Turns 'snake_case' to 'SnakeCase'"""
     return "".join(x.capitalize() or "_" for x in name.split("_"))
+
+
+def _clean_name(name):
+    """Removes special characters from a name"""
+    return re.sub(r"|\?|\(|\)|\[|\]|\.\\|\/|\&", "", name)
 
 
 # ! STEP 3 UTILS: Assignment of the values to the generated data model
