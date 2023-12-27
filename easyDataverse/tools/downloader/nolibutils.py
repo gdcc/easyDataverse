@@ -260,7 +260,7 @@ def _generate_add_method(target_cls, field):
     return forge.sign(
         forge.self,
         *[
-            forge.kwarg(name.replace("&", ""), type=dtype, default=forge.empty)
+            forge.kwarg(_clean_name(name), type=dtype, default=forge.empty)
             for name, dtype in target_cls.__annotations__.items()
         ],
         forge.kwarg("_target_cls", default=target_cls, bound=True),
@@ -291,6 +291,7 @@ def _snake_to_camel(name):
 
 def _clean_name(name):
     """Removes special characters from a name"""
+    name = name.replace("-", "_")
     return re.sub(r"|\?|\(|\)|\[|\]|\.\\|\/|\&", "", name)
 
 
