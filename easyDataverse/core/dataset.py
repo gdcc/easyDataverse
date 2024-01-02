@@ -3,8 +3,9 @@ import json
 import os
 import xmltodict
 import yaml
+import nob
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, HttpUrl
 from typing import Dict, Any, List, Optional
 from json import dumps
 
@@ -12,6 +13,15 @@ from easyDataverse.core.file import File
 from easyDataverse.core.base import DataverseBase
 from easyDataverse.tools.uploader import upload_to_dataverse, update_dataset
 from easyDataverse.tools.utils import YAMLDumper
+
+REQUIRED_FIELDS = [
+    "citation/title",
+    "citation/author/name",
+    "citation/dataset_contact/name",
+    "citation/dataset_contact/email",
+    "citation/ds_description/value",
+    "citation/subject",
+]
 
 
 class Dataset(BaseModel):
@@ -23,7 +33,7 @@ class Dataset(BaseModel):
     files: List[File] = Field(default_factory=list)
 
     API_TOKEN: Optional[str] = Field(None)
-    DATAVERSE_URL: Optional[str] = Field(None)
+    DATAVERSE_URL: Optional[HttpUrl] = Field(None)
 
     # ! Adders
     def add_metadatablock(self, metadatablock: DataverseBase) -> None:
@@ -241,14 +251,14 @@ class Dataset(BaseModel):
         Returns:
             str: [description]
         """
-
+        self._validate_required_fields()
         self.p_id = upload_to_dataverse(
             json_data=self.dataverse_json(),
             dataverse_name=dataverse_name,
             files=self.files,
             p_id=self.p_id,
-            DATAVERSE_URL=self.DATAVERSE_URL,
-            API_TOKEN=self.API_TOKEN,
+            DATAVERSE_URL=str(self.DATAVERSE_URL),
+            API_TOKEN=str(self.API_TOKEN),
             content_loc=content_loc,
         )
 
@@ -271,7 +281,7 @@ class Dataset(BaseModel):
             contact_mail (str, optional): Mail of the contact. Defaults to None.
             content_loc (Optional[str], optional): If specified, the ZIP that is used to upload will be stored at the destination provided. Defaults to None.
         """
-
+        self._validate_required_fields()
         update_dataset(
             json_data=self.dataverse_dict()["datasetVersion"],
             p_id=self.p_id,  # type: ignore
@@ -280,6 +290,78 @@ class Dataset(BaseModel):
             API_TOKEN=self.API_TOKEN,
             content_loc=content_loc,
         )
+
+    # ! Validation
+    def _validate_required_fields(self) -> bool:
+        """Validates whether all required fields are present and not empty.
+
+        Raises:
+            ValueError: If a required field is not present or empty.
+
+        Returns:
+            bool: True if all required fields are present and not empty, False otherwise.
+        """
+
+        results = []
+
+        for field in REQUIRED_FIELDS:
+            results.append(self._validate_required_field(field))
+
+        assert all(
+            result for result in results
+        ), "Required fields are missing or empty. Please provide a value for these fields."
+
+    def _validate_required_field(self, path: str) -> bool:
+        """
+        Validates if a required field in the dataset is present and not empty.
+
+        Args:
+            path (str): The path of the field to validate.
+
+        Raises:
+            ValueError: If the metadatablock specified in the path is not present in the dataset.
+
+        Returns:
+            List[bool]: True if the field is present and not empty, False otherwise.
+        """
+
+        metadatablock, *field = path.split("/")
+        field_path = "/" + "/".join(field)
+
+        if metadatablock not in self.metadatablocks:
+            raise ValueError(
+                f"Metadatablock '{metadatablock}' is not present in the dataset. Please use 'list_metadatablocks' to see which metadatablocks are registered."
+            )
+
+        metadatablock = nob.Nob(self.metadatablocks[metadatablock].dict())
+        results = []
+        field_exists = False
+
+        for dspath in metadatablock.paths:
+            meta_path = "/".join(
+                [part for part in str(dspath).split("/") if not part.isdigit()]
+            )
+
+            if meta_path != field_path:
+                continue
+            else:
+                field_exists = True
+
+            if metadatablock[dspath].val is None:
+                print(
+                    f"⚠️ Field '{path}' is empty yet required. Please provide a value for this field."
+                )
+
+                results.append(False)
+
+        if not field_exists:
+            print(
+                f"⚠️ Field '{path}' is not present in the dataset. Please provide a value for this field."
+            )
+
+            results.append(False)
+
+        return len(results) == 0
 
     # ! Utilities
     def list_metadatablocks(self):
