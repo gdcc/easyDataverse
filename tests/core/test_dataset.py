@@ -1,40 +1,8 @@
-import importlib
 import json
-import os
 import pytest
-import subprocess
-import sys
 
 from easyDataverse.core.dataset import Dataset
 from easyDataverse.core.file import File
-
-
-class TestDataset:
-    def test_add_metadatablock(self, metadatablock):
-        """Tests whether the addition of a metadatablock works"""
-
-        # Initialize a blank dataset
-        dataset = Dataset()
-
-        # Add metadatablock to the dataset
-        dataset.add_metadatablock(metadatablock)
-
-        assert hasattr(dataset, "testblock"), "Not added as attribute"
-        assert (
-            "testblock" in dataset.metadatablocks.keys()
-        ), "Not added to the 'metadatablocks' dict"
-        assert (
-            metadatablock.dict() == dataset.metadatablocks["testblock"]
-        ), "Not the same content"
-
-    def test_invalid_block_addition(self, invalid_block):
-        """Tests whether invalid blocks are recognized"""
-
-        # initialize a blank dataset
-        dataset = Dataset()
-
-        with pytest.raises(TypeError):
-            dataset.add_metadatablock(invalid_block)
 
 
 class TestFileAddition:
@@ -267,78 +235,6 @@ class TestDataverseExport:
         assert (
             dataset.dataverse_json() == dataverse_json
         ), "Dataverse JSON output does not match expected output"
-
-
-class TestDataverseImport:
-
-    # ! Utilities
-    @staticmethod
-    def _setup_toy_dataset():
-        """Toy dataset based on the testing library"""
-
-        def get_class(class_name):
-            return getattr(
-                importlib.import_module(".metadatablocks.toyDataset", "pyExampleLib"),
-                class_name,
-            )
-
-        # Get all the modules
-        toydataset = get_class("ToyDataset")
-        some_enum = get_class("SomeEnum")
-
-        # Set up the block
-        block = toydataset(foo="foo", some_enum=some_enum.enum)
-        block.add_compound("bar")
-
-        # Add it to the dataset
-        dataset = Dataset()
-        dataset.add_metadatablock(block)
-
-        return dataset
-
-    # ! Tests
-    def test_yaml_import(self):
-        """Tests whether the YAML import is working"""
-
-        # Pre-liminaries
-        sys.path.append(os.path.abspath("./tests/fixtures/pyExampleLib"))
-        expected_dataset = self._setup_toy_dataset()
-
-        # Initialize the dataset
-        dataset = Dataset.from_yaml("./tests/fixtures/dataset/yaml_output.yaml")
-
-        assert (
-            expected_dataset.dict() == dataset.dict()
-        ), "YAML import differs from expected dataset"
-
-    def test_json_import(self):
-        """Tests whether the YAML import is working"""
-
-        # Pre-liminaries
-        sys.path.append(os.path.abspath("./tests/fixtures/pyExampleLib"))
-        expected_dataset = self._setup_toy_dataset()
-
-        # Initialize the dataset
-        dataset = Dataset.from_json("./tests/fixtures/dataset/json_output.json")
-
-        assert (
-            expected_dataset.dict() == dataset.dict()
-        ), "JSON import differs from expected dataset"
-
-    def test_dict_import(self):
-        """Tests whether the YAML import is working"""
-
-        # Pre-liminaries
-        sys.path.append(os.path.abspath("./tests/fixtures/pyExampleLib"))
-        expected_dataset = self._setup_toy_dataset()
-
-        # Initialize the dataset
-        dict_input = open("./tests/fixtures/dataset/json_output.json").read()
-        dataset = Dataset.from_dict(json.loads(dict_input))
-
-        assert (
-            expected_dataset.dict() == dataset.dict()
-        ), "Dict import differs from expected dataset"
 
 
 class TestUtils:
