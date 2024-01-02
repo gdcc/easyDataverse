@@ -52,7 +52,7 @@ class Dataverse(BaseModel):
         description="The native API provided by PyDataverse to use for interacting with the Dataverse installation beyond EasyDataverse.",
     )
 
-    __dataset_gen__: Callable = PrivateAttr(default=None)
+    _dataset_gen: Callable = PrivateAttr(default=None)
 
     def __init__(
         self,
@@ -66,7 +66,7 @@ class Dataverse(BaseModel):
 
         self._connect()
         self.native_api = NativeApi(
-            base_url=self.server_url,
+            base_url=str(self.server_url),
             api_token=str(self.api_token),  # type: ignore
         )
 
@@ -122,14 +122,15 @@ class Dataverse(BaseModel):
 
             dataset.add_metadatablock(block_cls())
 
-        self.__dataset_gen__ = lambda: deepcopy(dataset)
+        self._dataset_gen = lambda: deepcopy(dataset)
 
         print("Connection successfuly established!")
 
     def _version_is_compliant(self) -> bool:
         """Checks whether the Dataverse version is 5.13 or above."""
-
-        response = requests.get(parse.urljoin(self.server_url, "/api/info/version"))
+        response = requests.get(
+            parse.urljoin(str(self.server_url), "/api/info/version")
+        )
 
         if response.status_code != 200:
             raise ValueError(
@@ -149,7 +150,7 @@ class Dataverse(BaseModel):
 
     def create_dataset(self) -> Dataset:
         """Creates a blank dataset that complies to the metadatablocks of the Dataverse installation."""
-        return self.__dataset_gen__()
+        return self._dataset_gen()
 
     @classmethod
     def load_from_url(

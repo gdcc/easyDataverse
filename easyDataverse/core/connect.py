@@ -9,9 +9,8 @@ from functools import cache
 from datetime import date
 from urllib.parse import urljoin, urlparse
 from dotted_dict import DottedDict
-from collections import deque
 from pydantic import create_model, AnyHttpUrl, EmailStr, Field
-from pydantic.fields import FieldInfo, Undefined
+from pydantic.fields import FieldInfo
 from typing import List, Tuple, Union, Type, Optional, Dict, Callable
 
 from easyDataverse.core.base import DataverseBase
@@ -33,7 +32,7 @@ TYPE_MAPPING = {
 def fetch_metadatablocks(url: AnyHttpUrl) -> Dict:
     """Fetches all metadatablocks from a given URL"""
 
-    url = urlparse(url)
+    url = urlparse(str(url))
     all_blocks_url = urljoin(url.geturl(), "api/metadatablocks")
 
     response = requests.get(all_blocks_url)
@@ -132,7 +131,9 @@ def create_dataverse_class(
 
 
 def create_compound(
-    compound: Dict, add_functions: Dict, common_part: str = ""
+    compound: Dict,
+    add_functions: Dict,
+    common_part: str = "",
 ) -> Tuple[Callable, FieldInfo]:
     """Takes a compound definition, creates a corresponding data type and an add_function
 
@@ -152,7 +153,7 @@ def create_compound(
 
     if compound.multiple is False:
         # Set non-multiple compounds directly as default
-        field_meta.default = Undefined
+        field_meta.default = None
         field_meta.default_factory = sub_cls
 
     # Create add function
@@ -181,7 +182,7 @@ def get_field_type(field: Dict, compound_class=None) -> Type:
     if field.multiple:
         return list_type(dtype)
     else:
-        return dtype
+        return optional_type(dtype)
 
 
 def prepare_field_meta(field: Dict) -> FieldInfo:

@@ -6,12 +6,12 @@ import xmltodict
 from anytree import Node, RenderTree
 from enum import Enum
 from pydantic import BaseModel
-from typing import Dict, Optional
+from typing import Dict, Optional, get_args
 
 
 class DataverseBase(BaseModel):
     class Config:
-        validate_all = True
+        validate_default = True
         validate_assignment = True
         use_enum_values = True
 
@@ -106,7 +106,7 @@ class DataverseBase(BaseModel):
                 continue
 
             # Fetch the value of the attribute
-            properties = field.field_info.extra
+            properties = field.json_schema_extra
             value = getattr(self, attr)
 
             if self.is_empty(value):
@@ -183,13 +183,18 @@ class DataverseBase(BaseModel):
         else:
             root = parent
 
-        for name, field in cls.__fields__.items():
+        for name, field in cls.model_fields.items():
             node = Node(name)
-            node.typeName = field.field_info.extra["typeName"]
-            node.typeClass = field.field_info.extra["typeClass"]
+            node.typeName = field.json_schema_extra["typeName"]
+            node.typeClass = field.json_schema_extra["typeClass"]
             node.parent = root
 
-            if hasattr(field.type_, "__fields__"):
-                field.type_._create_tree(parent=node)
+            if get_args(field.annotation):
+                dtype = get_args(field.annotation)[0]
+            else:
+                dtype = field.annotation
+
+            if hasattr(dtype, "model_fields"):
+                dtype._create_tree(parent=node)
 
         return root
