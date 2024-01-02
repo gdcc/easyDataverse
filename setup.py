@@ -14,7 +14,7 @@ setup(
     include_package_data=True,
     entry_points={"console_scripts": ["dataverse=easyDataverse.cli:main"]},
     install_requires=[
-        "pydantic==1.10",
+        "pydantic",
         "jinja2",
         "pydataverse",
         "pandas",
