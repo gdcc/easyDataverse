@@ -12,8 +12,8 @@ from typing import List, Optional
 from pyDataverse.api import NativeApi, DataAccessApi
 from pyDataverse.models import Dataset, Datafile
 
-from easyDataverse.core.file import File
-from easyDataverse.core.exceptions import (
+from easyDataverse.file import File
+from easyDataverse.exceptions import (
     MissingURLException,
     MissingCredentialsException,
 )

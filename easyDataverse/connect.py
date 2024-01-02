@@ -13,7 +13,7 @@ from pydantic import create_model, AnyHttpUrl, EmailStr, Field
 from pydantic.fields import FieldInfo
 from typing import List, Tuple, Union, Type, Optional, Dict, Callable
 
-from easyDataverse.core.base import DataverseBase
+from easyDataverse.base import DataverseBase
 
 REQUIRED_FIELDS = []
 TYPE_MAPPING = {
