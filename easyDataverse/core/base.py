@@ -1,3 +1,4 @@
+import datetime
 import json
 import yaml
 import xmltodict
@@ -124,6 +125,10 @@ class DataverseBase(BaseModel):
                 # TODO Refactor to separate check
                 if all(isinstance(val, Enum) for val in value):
                     value = [val.value for val in value]
+
+            # Convert date to string
+            if isinstance(value, (datetime.date, datetime.datetime)):
+                value = value.strftime("%Y-%m-%d")
 
             json_obj.update(
                 {
