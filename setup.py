@@ -31,6 +31,7 @@ setup(
         "dotted-dict==1.1.3",
         "python-forge==18.6.0",
         "grequests",
+        "rich",
     ],
     extras_require={"test": ["pytest-cov"]},
 )
