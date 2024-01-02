@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Optional, List
-from easyDataverse.core import DataverseBase
+from easyDataverse.base import DataverseBase
 from pydantic import Field
 
 
