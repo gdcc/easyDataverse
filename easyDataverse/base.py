@@ -19,27 +19,27 @@ class DataverseBase(BaseModel):
     def from_json_string(cls, json_string: str):
         """Initializes an object from a JSON file"""
 
-        return cls.parse_obj(json.loads(json_string))
+        return cls.model_validate(json.loads(json_string))
 
     @classmethod
     def from_json_file(cls, file_path: str):
         """Initializes an object from a JSON file"""
 
         with open(file_path, "r") as f:
-            return cls.parse_obj(json.load(f))
+            return cls.model_validate(json.load(f))
 
     @classmethod
     def from_yaml_string(cls, yaml_string: str):
         """Initializes an object from a YAML string"""
 
-        return cls.parse_obj(yaml.safe_load(yaml_string))
+        return cls.model_validate(yaml.safe_load(yaml_string))
 
     @classmethod
     def from_yaml_file(cls, file_path: str):
         """Initializes an object from a YAML string"""
 
         with open(file_path, "r") as f:
-            return cls.parse_obj(yaml.safe_load(f))
+            return cls.model_validate(yaml.safe_load(f))
 
     def json(self, indent: int = 2, **kwargs) -> str:
         """Returns a JSON representation of the dataverse object."""
@@ -65,7 +65,7 @@ class DataverseBase(BaseModel):
         """Returns a dictionary representation of the dataverse object."""
 
         # Get the dictionary function from pyDantic
-        fields = super().dict(**dictkwargs)
+        fields = super().model_dump(**dictkwargs)
 
         return {
             key: value for key, value in fields.items() if value != {} and value != []
@@ -100,7 +100,7 @@ class DataverseBase(BaseModel):
         # Get properties and init json_obj
         json_obj = {}
 
-        for attr, field in self.__fields__.items():
+        for attr, field in self.model_fields.items():
             if any(name in attr for name in ["add_", "_metadatablock_name"]):
                 # Only necessary for blind fetch
                 continue
@@ -162,7 +162,7 @@ class DataverseBase(BaseModel):
             return True
         elif value == []:
             return True
-        elif hasattr(value, "__fields__") and value.dict(exclude_none=True) == {}:
+        elif hasattr(value, "model_fields") and value.dict(exclude_none=True) == {}:
             return True
 
         return False

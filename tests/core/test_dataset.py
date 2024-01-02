@@ -1,8 +1,8 @@
 import json
 import pytest
 
-from easyDataverse.core.dataset import Dataset
-from easyDataverse.core.file import File
+from easyDataverse.dataset import Dataset
+from easyDataverse.file import File
 
 
 class TestFileAddition:

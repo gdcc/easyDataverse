@@ -1,11 +1,8 @@
-import os
-
 from typing import Optional
 from pydantic import BaseModel, validator
 
 
 class File(BaseModel):
-
     filename: str
     description: Optional[str] = None
     file_pid: Optional[str] = None

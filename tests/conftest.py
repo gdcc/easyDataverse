@@ -1,7 +1,7 @@
 import pytest
 
 from easyDataverse import Dataset
-from easyDataverse.core.base import DataverseBase
+from easyDataverse.base import DataverseBase
 
 from tests.fixtures.dataset.toydataset import ToyDataset, SomeEnum
 from tests.fixtures.dataset.invalidclass import InvalidBlock, AnotherEnum

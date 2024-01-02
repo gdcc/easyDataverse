@@ -69,10 +69,7 @@ def upload_to_dataverse(
         if files:
             _uploadFiles(files, p_id, api, content_loc)  # type: ignore
 
-        if DATAVERSE_URL:
-            print(f"{DATAVERSE_URL}/dataset.xhtml?persistentId={p_id}")
-        else:
-            print(f"{os.environ['DATAVERSE_URL']}/dataset.xhtml?persistentId={p_id}")
+        print(f"{DATAVERSE_URL}/dataset.xhtml?persistentId={p_id}")
 
         return p_id  # type: ignore
 

@@ -8,10 +8,10 @@ from pydantic import BaseModel, Field, HttpUrl
 from typing import Dict, Any, List, Optional
 from json import dumps
 
-from easyDataverse.core.file import File
-from easyDataverse.core.base import DataverseBase
-from easyDataverse.tools.uploader import upload_to_dataverse, update_dataset
-from easyDataverse.tools.utils import YAMLDumper
+from easyDataverse.file import File
+from easyDataverse.base import DataverseBase
+from easyDataverse.uploader import upload_to_dataverse, update_dataset
+from easyDataverse.utils import YAMLDumper
 
 REQUIRED_FIELDS = [
     "citation/title",
@@ -224,16 +224,6 @@ class Dataset(BaseModel):
     def json(self) -> str:
         """Exports the dataset as a JSON file that can also be read by the API"""
         return json.dumps(self.dict(), indent=4)
-
-    def hdf5(self, path: str) -> None:
-        """Exports the dataset to an HDF5 dataset that can also be read by the API
-
-        Args:
-            path (str): Path to the destination HDF5 files.
-        """
-
-        # Write metatdat to hdf5
-        dd.io.save(path, self.dict(exclude={"files"}, exclude_none=True))
 
     # ! Dataverse interfaces
     def upload(
