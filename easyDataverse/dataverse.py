@@ -1,22 +1,18 @@
-import grequests
-import requests
-
+import asyncio
 from copy import deepcopy
 from typing import Callable, Dict, List, Optional, Tuple
 from urllib import parse
 
+import requests
 from anytree import Node, findall_by_attr
 from dotted_dict import DottedDict
-from pydantic import BaseModel, Field, PrivateAttr, HttpUrl, UUID4
-from pyDataverse.api import NativeApi, DataAccessApi
+from pydantic import UUID4, BaseModel, ConfigDict, Field, HttpUrl, PrivateAttr
+from pyDataverse.api import DataAccessApi, NativeApi
 
-from .utils import download_files
+from .classgen import create_dataverse_class, remove_child_fields_from_global
+from .connect import fetch_metadatablocks, gather_metadatablock_names
 from .dataset import Dataset
-from .connect import (
-    create_dataverse_class,
-    fetch_metadatablocks,
-    remove_child_fields_from_global,
-)
+from .utils import download_files
 
 
 class Dataverse(BaseModel):
@@ -34,8 +30,7 @@ class Dataverse(BaseModel):
     the metadatablocks.
     """
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     server_url: HttpUrl = Field(
         ...,
@@ -103,31 +98,59 @@ class Dataverse(BaseModel):
             )
 
         dataset = Dataset(API_TOKEN=str(self.api_token), DATAVERSE_URL=self.server_url)
-        all_blocks = fetch_metadatablocks(self.server_url)
-
-        for metadatablock in all_blocks.values():
-            metadatablock = deepcopy(metadatablock)
-            fields = remove_child_fields_from_global(metadatablock.data.fields)
-            primitives = list(
-                filter(lambda field: "childFields" not in field, fields.values())
+        block_names = gather_metadatablock_names(str(self.server_url))
+        all_blocks = asyncio.run(
+            fetch_metadatablocks(
+                block_names,
+                base_url=str(self.server_url),
             )
-            compounds = list(
-                filter(lambda field: "childFields" in field, fields.values())
-            )
+        )
 
-            block_cls = create_dataverse_class(
-                metadatablock.data.name, primitives, compounds
-            )
-            block_cls._metadatablock_name = metadatablock.data.name
-
-            dataset.add_metadatablock(block_cls())
+        tasks = [self._process_metadatablock(dataset, block) for block in all_blocks]
+        asyncio.run(asyncio.gather(*tasks))
 
         self._dataset_gen = lambda: deepcopy(dataset)
 
         print("Connection successfuly established!")
 
+    async def _process_metadatablock(
+        self,
+        dataset: Dataset,
+        block: Dict,
+    ) -> Dict:
+        """
+        Process a metadata block for a dataset.
+
+        Args:
+            dataset (Dataset): The dataset object to which the metadata block belongs.
+            block (Dict): The metadata block to process.
+
+        Returns:
+            Dict: The processed metadata block.
+        """
+        metadatablock = deepcopy(block)
+        fields = remove_child_fields_from_global(metadatablock.data.fields)
+        primitives = list(
+            filter(lambda field: "childFields" not in field, fields.values())
+        )
+        compounds = list(filter(lambda field: "childFields" in field, fields.values()))
+
+        block_cls = create_dataverse_class(
+            metadatablock.data.name, primitives, compounds
+        )
+        block_cls._metadatablock_name = metadatablock.data.name
+
+        dataset.add_metadatablock(block_cls())
+
     def _version_is_compliant(self) -> bool:
-        """Checks whether the Dataverse version is 5.13 or above."""
+        """Checks whether the Dataverse version is 5.13 or above.
+
+        Returns:
+            bool: True if the version is compliant, False otherwise.
+
+        Raises:
+            ValueError: If the server URL is not a valid Dataverse installation or version info is not found.
+        """
         response = requests.get(
             parse.urljoin(str(self.server_url), "/api/info/version")
         )
@@ -149,7 +172,12 @@ class Dataverse(BaseModel):
     # ! Dataset Handlers
 
     def create_dataset(self) -> Dataset:
-        """Creates a blank dataset that complies to the metadatablocks of the Dataverse installation."""
+        """
+        Creates a blank dataset that complies to the metadatablocks of the Dataverse installation.
+
+        Returns:
+            Dataset: The newly created dataset.
+        """
         return self._dataset_gen()
 
     @classmethod
