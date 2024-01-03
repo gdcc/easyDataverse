@@ -465,7 +465,7 @@ class TestGenerateAddFuntion:
             optional: Optional[str] = None
 
         class ParentClass(BaseModel):
-            to_add_to: list[TestClass] = []
+            to_add_to: List[TestClass] = []
 
         # Act
         result = generate_add_function(
