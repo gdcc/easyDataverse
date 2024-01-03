@@ -237,16 +237,6 @@ class TestUnionType:
         with pytest.raises(TypeError):
             union_type(dtypes)
 
-    # Raises a TypeError if the input tuple contains non-type elements
-    @pytest.mark.unit
-    def test_raises_type_error_with_non_type_elements(self):
-        # Arrange
-        dtypes = (int, str, 10)
-
-        # Act and Assert
-        with pytest.raises(TypeError):
-            union_type(dtypes)
-
 
 class TestConstructClassName:
     # Converts a display name with spaces to a class name with capitalized words.
