@@ -1,37 +1,38 @@
 <h1 align="center">
   <img src="https://github.com/gdcc/easyDataverse/blob/main/static/logo.png" width=300 alt="EasyDataverse"></br>
   <img src="https://img.shields.io/badge/EasyDataverse-0.4.0-blue" alt="v0.4.0">
-  <img src="https://github.com/gdcc/easyDataverse/actions/workflows/build.yaml/badge.svg" alt="Build Badge">
+  <img src="https://github.com/gdcc/easyDataverse/actions/workflows/unit-tests.yaml/badge.svg" alt="Build Badge">
+  <img src="https://github.com/gdcc/easyDataverse/actions/workflows/integration-tests.yaml/badge.svg" alt="Build Badge">
 </a>
 </h1>
-<p align="center"> 
-EasyDataverse is a Python libary used to interface Dataverse installations and generate Python code compatible to a metadatablock configuration given at a Dataverse installation. In addtion, EasyDataverse allows you to export and import datasets to and from various data formats.</p>
+<p align="center">
+EasyDataverse is a Python libary used to interface Dataverse installations and dynamically generate Python objects compatible to a metadatablock configuration given at a Dataverse installation. In addtion, EasyDataverse allows you to export and import datasets to and from various data formats.</p>
 
-###  Features
+### Features
 
 - **Metadataconfig compliant** classes for flexible Dataset creation.
 - **Upload and download** of files and directories to and from Dataverse installations.
-- **Export and import** of datasets to various formats (JSON, YAML, XML and HDF5).
+- **Export and import** of datasets to various formats (JSON, YAML and XML).
 - **Fetch datasets** from any Dataverse installation into an object oriented structure ready to be integrated.
 
 ## ⚡️ Quick start
-Get started with EasyDataverse by running the following command 
 
-```
+Get started with EasyDataverse by running the following command
+
+```bash
 # Using PyPI
 python -m pip install easyDataverse
 ```
 
 Or build by source
 
-```
+```bash
 git clone https://github.com/gdcc/easyDataverse.git
 cd easyDataverse
 python setup.py install
 ```
 
 ## ⚙️ Quickstart
-
 
 ### Dataset creation
 
@@ -103,4 +104,4 @@ dataset.update()
 
 ## ⚠️ License
 
-`EasyDataverse` is free and open-source software licensed under the [MIT License](). 
+`EasyDataverse` is free and open-source software licensed under the [MIT License]().
