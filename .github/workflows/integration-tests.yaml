@@ -1,0 +1,34 @@
+name: Integration Tests
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: ['3.7', '3.8', '3.9', '3.10']
+
+    env:
+      PORT: 8080
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v4"
+      - name: Run Dataverse Action
+        id: dataverse
+        uses: gdcc/dataverse-action@main
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install -e .[test]
+      - name: Test with pytest
+        env:
+            API_TOKEN: ${{ steps.dataverse.outputs.api_token }}
+            BASE_URL: ${{ steps.dataverse.outputs.base_url }}
+        run: |
+          python3 -m pytest -v -m integration
