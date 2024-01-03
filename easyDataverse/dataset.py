@@ -1,18 +1,21 @@
 import json
 import os
+from json import dumps
+from typing import Any, Dict, List, Optional
+
+import nob
 import xmltodict
 import yaml
-import nob
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
-from pydantic import BaseModel, Field, HttpUrl
-from typing import Dict, Any, List, Optional
-from json import dumps
-
-from easyDataverse.file import File
 from easyDataverse.base import DataverseBase
-from easyDataverse.uploader import upload_to_dataverse, update_dataset
+from easyDataverse.file import File
+from easyDataverse.uploader import update_dataset, upload_to_dataverse
 from easyDataverse.utils import YAMLDumper
 
+# These may be inferred from the collection
+# in the future, but for now the basic fields
+# are required.
 REQUIRED_FIELDS = [
     "citation/title",
     "citation/author/name",
@@ -24,8 +27,9 @@ REQUIRED_FIELDS = [
 
 
 class Dataset(BaseModel):
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(
+        extra="allow",
+    )
 
     metadatablocks: Dict[str, Any] = dict()
     p_id: Optional[str] = None

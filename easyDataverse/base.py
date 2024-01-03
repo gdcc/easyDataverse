@@ -5,15 +5,16 @@ import xmltodict
 
 from anytree import Node, RenderTree
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Dict, Optional, get_args
 
 
 class DataverseBase(BaseModel):
-    class Config:
-        validate_default = True
-        validate_assignment = True
-        use_enum_values = True
+    model_config = ConfigDict(
+        validate_default=True,
+        validate_assignment=True,
+        use_enum_values=True,
+    )
 
     @classmethod
     def from_json_string(cls, json_string: str):
