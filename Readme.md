@@ -4,8 +4,8 @@
   <img src="https://img.shields.io/badge/python-3.8|3.9|3.10|3.11-blue.svg" alt="Build Badge">
   <img src="https://github.com/gdcc/easyDataverse/actions/workflows/unit-tests.yaml/badge.svg" alt="Build Badge">
   <img src="https://github.com/gdcc/easyDataverse/actions/workflows/integration-tests.yaml/badge.svg" alt="Build Badge">
-</a>
 </h1>
+
 <p align="center">
 EasyDataverse is a Python libary used to interface Dataverse installations and dynamically generate Python objects compatible to a metadatablock configuration given at a Dataverse installation. In addtion, EasyDataverse allows you to export and import datasets to and from various data formats.</p>
 
