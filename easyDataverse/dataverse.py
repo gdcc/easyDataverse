@@ -107,7 +107,7 @@ class Dataverse(BaseModel):
         )
 
         tasks = [self._process_metadatablock(dataset, block) for block in all_blocks]
-        asyncio.run(asyncio.gather(*tasks))
+        asyncio.run(asyncio.gather(*tasks))  # type: ignore
 
         self._dataset_gen = lambda: deepcopy(dataset)
 
@@ -117,7 +117,7 @@ class Dataverse(BaseModel):
         self,
         dataset: Dataset,
         block: Dict,
-    ) -> Dict:
+    ):
         """
         Process a metadata block for a dataset.
 
@@ -125,20 +125,18 @@ class Dataverse(BaseModel):
             dataset (Dataset): The dataset object to which the metadata block belongs.
             block (Dict): The metadata block to process.
 
-        Returns:
-            Dict: The processed metadata block.
         """
         metadatablock = deepcopy(block)
-        fields = remove_child_fields_from_global(metadatablock.data.fields)
+        fields = remove_child_fields_from_global(metadatablock.data.fields)  # type: ignore
         primitives = list(
             filter(lambda field: "childFields" not in field, fields.values())
         )
         compounds = list(filter(lambda field: "childFields" in field, fields.values()))
 
         block_cls = create_dataverse_class(
-            metadatablock.data.name, primitives, compounds
+            metadatablock.data.name, primitives, compounds  # type: ignore
         )
-        block_cls._metadatablock_name = metadatablock.data.name
+        block_cls._metadatablock_name = metadatablock.data.name  # type: ignore
 
         dataset.add_metadatablock(block_cls())
 
@@ -276,7 +274,7 @@ class Dataverse(BaseModel):
             version = "latest"
 
         endpoint = f"/api/datasets/:persistentId/?persistentId={pid}"
-        url = parse.urljoin(self.server_url, endpoint)
+        url = parse.urljoin(self.server_url, endpoint)  # type: ignore
         header = {}
 
         if self.api_token is not None:
