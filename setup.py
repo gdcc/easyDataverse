@@ -17,7 +17,6 @@ setup(
         "pydantic",
         "jinja2",
         "pydataverse",
-        "datamodel_code_generator",
         "pyaml",
         "xmltodict",
         "tqdm",
@@ -31,6 +30,7 @@ setup(
         "nest_asyncio",
         "aiohttp",
         "aiodns",
+        "dvuploader",
     ],
     extras_require={"test": ["pytest-cov"]},
 )
