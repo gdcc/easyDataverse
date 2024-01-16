@@ -6,6 +6,8 @@ import tqdm
 from pyDataverse.api import DataAccessApi
 import yaml
 
+from dvuploader import File
+
 
 class YAMLDumper(yaml.Dumper):
     def increase_indent(self, flow=False, indentless=False):
@@ -20,9 +22,6 @@ def download_files(
     filenames: Optional[List[str]] = None,
 ) -> None:
     """Downloads and adds all files given in the dataset to the Dataset-Object"""
-
-    # Prevent circular import
-    from easyDataverse.core import File
 
     if filedir is not None:
         # Set up the progress bar
@@ -60,14 +59,13 @@ def download_files(
             with open(local_path, "wb") as f:
                 f.write(response.content)
         else:
-            local_path = None
+            local_path = f"./{filename}"
 
         # Create the file object
         datafile = File(
-            filename=filename,
+            filepath=local_path,
             description=description,
-            local_path=local_path,
-            file_pid=file_pid,
+            file_id=file_pid,
         )
 
         dataset.files.append(datafile)

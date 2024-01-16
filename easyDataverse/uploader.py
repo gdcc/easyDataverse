@@ -1,22 +1,13 @@
-import io
 import os
 import json
 import requests
-import sys
-import tqdm
-import zipfile
 
 from urllib.parse import urljoin
 from typing import List, Optional
+from dvuploader import File, DVUploader
 
 from pyDataverse.api import NativeApi, DataAccessApi
-from pyDataverse.models import Dataset, Datafile
-
-from easyDataverse.file import File
-from easyDataverse.exceptions import (
-    MissingURLException,
-    MissingCredentialsException,
-)
+from pyDataverse.models import Dataset
 
 
 def upload_to_dataverse(
@@ -24,6 +15,7 @@ def upload_to_dataverse(
     dataverse_name: str,
     files: List[File] = [],
     p_id: Optional[str] = None,
+    n_parallel: int = 1,
     content_loc: Optional[str] = None,
     DATAVERSE_URL: Optional[str] = None,
     API_TOKEN: Optional[str] = None,
@@ -39,59 +31,58 @@ def upload_to_dataverse(
 
 
     Raises:
-        MissingURLException: URL to the dataverse installation is missing. Please include in your environment variables.
-        MissingCredentialsException: API-Token to the dataverse installation is missing. Please include in your environment variables
-
+        ValueError: If the API Token is missing.
     Returns:
         str: The resulting DOI of the dataset, if successful.
     """
 
     api, _ = _initialize_pydataverse(DATAVERSE_URL, API_TOKEN)
-
     ds = Dataset()
     ds.from_json(json_data)
 
     # Finally, validate the JSON
-    if ds.validate_json():
-        if p_id:
-            # Update dataset if pid given
-            response = api.create_dataset(dataverse_name, json_data, p_id)
-        else:
-            # Create new if no pid given
-            response = api.create_dataset(dataverse_name, json_data)
+    if not ds.validate_json():
+        raise ValueError("JSON is not valid")
 
-        if response.json()["status"] != "OK":
-            raise Exception(response.json()["message"])
+    create_params = {
+        "dataverse": dataverse_name,
+        "metadata": json_data,
+    }
 
-        # Get response data
-        p_id = response.json()["data"]["persistentId"]
+    if p_id:
+        create_params["pid"] = p_id
 
-        if files:
-            _uploadFiles(files, p_id, api, content_loc)  # type: ignore
+    response = api.create_dataset(**create_params)
+    response.raise_for_status()
 
-        print(f"{DATAVERSE_URL}/dataset.xhtml?persistentId={p_id}")
+    # Get response data
+    p_id = response.json()["data"]["persistentId"]
 
-        return p_id  # type: ignore
+    _uploadFiles(
+        files=files,
+        p_id=p_id,
+        api=api,
+        n_parallel=n_parallel,
+    )  # type: ignore
 
-    else:
-        raise Exception("Could not upload")
+    print(f"{DATAVERSE_URL}/dataset.xhtml?persistentId={p_id}")
+
+    return p_id  # type: ignore
 
 
 def _initialize_pydataverse(DATAVERSE_URL: str, API_TOKEN: str):
     """Sets up a pyDataverse API for upload."""
-
-    # Get environment variables
-    if DATAVERSE_URL is None:
-        raise MissingURLException
-
-    if API_TOKEN is None:
-        raise MissingCredentialsException
-
-    return NativeApi(DATAVERSE_URL, API_TOKEN), DataAccessApi(DATAVERSE_URL, API_TOKEN)
+    return (
+        NativeApi(DATAVERSE_URL, API_TOKEN),
+        DataAccessApi(DATAVERSE_URL, API_TOKEN),
+    )
 
 
 def _uploadFiles(
-    files: List[File], p_id: str, api: DataAccessApi, content_loc: Optional[str] = None
+    files: List[File],
+    p_id: str,
+    api: DataAccessApi,
+    n_parallel: int = 1,
 ) -> None:
     """Uploads any file to a dataverse dataset.
     Args:
@@ -100,75 +91,16 @@ def _uploadFiles(
         api (API): API object which is used to upload the file
     """
 
-    # Compress all files present in a ZipFile
-    zip_file = io.BytesIO()
-    zf = zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED)
-    has_content = False
+    if not files:
+        return
 
-    # Set up a progress bar
-    files = tqdm.tqdm(files, file=sys.stdout)
-    files.set_description(f"Zipping data files")
-
-    chunks = []
-
-    for index, file in enumerate(files):
-        if file.local_path and not file.file_pid:
-            has_content = True
-            zf.writestr(
-                os.path.join(file.dv_dir, file.filename),
-                open(file.local_path, "rb").read(),
-            )
-
-        if (index + 1) % 999 == 0:
-            # Make chunks of 999 files each
-            filename = f"contents{len(chunks)}.zip"
-            chunks.append(filename)
-
-            zf, zip_file = _write_and_renew_chunk(
-                fname=filename, zip_file=zip_file, content_loc=content_loc
-            )
-
-    # Write remaining data into new chunk zip
-    filename = f"contents{len(chunks)+1}.zip"
-    chunks.append(filename)
-
-    _write_and_renew_chunk(fname=filename, zip_file=zip_file, content_loc=content_loc)
-
-    # Now upload all chunks
-    chunks = tqdm.tqdm(chunks, file=sys.stdout)
-    chunks.set_description(f"Uploading data files")
-
-    for chunk in chunks:
-        df = Datafile()
-        df.set({"pid": p_id, "filename": chunk})
-
-        if has_content:
-            response = api.upload_datafile(p_id, chunk, df.json())
-
-            if response.status_code != 200:
-                raise ValueError(
-                    f"Upload failed: {response.status_code} {response.text}"
-                )
-
-        if content_loc is None:
-            os.remove(chunk)
-
-
-def _write_and_renew_chunk(fname: str, zip_file, content_loc):
-    """Writes a given in-memory chunk to a zip file and return a fresh one"""
-
-    if content_loc:
-        # Create destination dir to store upload package
-        os.makedirs(content_loc, exist_ok=True)
-        filename = os.path.join(content_loc, fname)
-
-    with open(fname, "wb") as f:
-        f.write(zip_file.getvalue())
-
-    zip_file = io.BytesIO()
-    zf = zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED)
-
-    return zf, zip_file
+    dvuploader = DVUploader(files=files)
+    dvuploader.upload(
+        persistent_id=p_id,
+        dataverse_url=api.base_url,
+        api_token=api.api_token,
+        n_parallel_uploads=n_parallel,
+    )
 
 
 def update_dataset(
@@ -190,35 +122,34 @@ def update_dataset(
     """
 
     url = urljoin(
-        DATAVERSE_URL,
+        DATAVERSE_URL,  # type: ignore
         f"/api/datasets/:persistentId/versions/:draft?persistentId={p_id}",
     )
 
     response = requests.put(
         url,
         json=json_data,
-        headers={"X-Dataverse-key": API_TOKEN},
+        headers={"X-Dataverse-key": API_TOKEN},  # type: ignore
     )
 
-    if response.json()["status"] != "OK":
-        raise Exception(response.json()["message"])
+    response.raise_for_status()
 
-    api, _ = _initialize_pydataverse(DATAVERSE_URL, API_TOKEN)
+    api, _ = _initialize_pydataverse(DATAVERSE_URL, API_TOKEN)  # type: ignore
 
     # Update files that have a pid
     new_files = []
     for file in files:
-        if not file.file_pid:
+        if not file.file_id:
             new_files.append(file)
             continue
 
         # Get the metadata of the file
-        file_dir = os.path.dirname(file.filename)
+        file_dir = os.path.dirname(file.filepath)
 
-        if file.local_path is not None:
+        if file.filepath is not None:
             response = api.replace_datafile(
-                identifier=file.file_pid,
-                filename=file.local_path,
+                identifier=file.file_id,
+                filename=file.fileName,
                 json_str=json.dumps(
                     {
                         "description": file.description,
@@ -229,8 +160,10 @@ def update_dataset(
                 is_filepid=False,
             )
 
-    if new_files:
-        # Upload files that havent been added yet
-        _uploadFiles(new_files, p_id, api, content_loc)
+    _uploadFiles(
+        files=new_files,
+        p_id=p_id,
+        api=api,  # type: ignore
+    )
 
     return True

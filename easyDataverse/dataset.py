@@ -8,8 +8,9 @@ import xmltodict
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
+from dvuploader import File, add_directory
+
 from easyDataverse.base import DataverseBase
-from easyDataverse.file import File
 from easyDataverse.uploader import update_dataset, upload_to_dataverse
 from easyDataverse.utils import YAMLDumper
 
@@ -69,14 +70,18 @@ class Dataset(BaseModel):
             description (str, optional): Description of the file. Defaults to "".
         """
 
-        # Create the file
-        filename = os.path.basename(local_path)
         file = File(
-            filename=filename,
-            dv_dir=dv_dir,
-            local_path=local_path,
+            filepath=local_path,
+            directoryLabel=dv_dir,
             description=description,
         )
+
+        # file = File(
+        #     filename=filename,
+        #     dv_dir=dv_dir,
+        #     local_path=local_path,
+        #     description=description,
+        # )
 
         if file not in self.files:
             self.files.append(file)
@@ -87,8 +92,7 @@ class Dataset(BaseModel):
         self,
         dirpath: str,
         dv_dir: str = "",
-        include_hidden: bool = False,
-        ignores: List[str] = [],
+        ignores: List[str] = [r"^\."],
     ) -> None:
         """Adds an entire directory including subdirectories to Dataverse.
 
@@ -98,59 +102,11 @@ class Dataset(BaseModel):
             ignores (List[str], optional): List of extensions/directories that should be ignored. Defaults to [].
         """
 
-        dirpath = os.path.join(dirpath)
-
-        if not os.path.isdir(dirpath):
-            raise FileNotFoundError(
-                f"Directory at {dirpath} does not exist or is not a directory. Please provide a valid directory."
-            )
-
-        for path, _, files in os.walk(dirpath):
-            if self._has_hidden_dir(path, dirpath) and not include_hidden:
-                # Checks whether the current path from the
-                # directory tree contains any hidden dirs
-                continue
-
-            if self._has_ignore_dirs(path, dirpath, ignores):
-                # Checks whether the directory or file is in the
-                # list of ignored data
-                continue
-
-            for file in files:
-                if file.startswith("."):
-                    # Skip hidden files
-                    continue
-
-                # Get all the metadata
-                filepath = os.path.join(path, file)
-
-                path_parts = [
-                    p
-                    for p in filepath.split(os.path.sep)
-                    if not p in dirpath.split(os.path.sep)
-                ]
-                filename = os.path.join(*path_parts)
-
-                if dirpath != ".":
-                    # Just catch the structure inside the dir
-                    dv_pre = os.path.join(
-                        dv_dir, os.path.dirname(filepath.split(dirpath)[-1])
-                    )
-                else:
-                    dv_pre = dv_dir
-
-                data_file = File(filename=filename, local_path=filepath, dv_dir=dv_pre)
-
-                # Substitute new files with old files
-                found = False
-                for f in self.files:
-                    if f.filename == filename:
-                        f.local_path = data_file.local_path
-                        found = True
-                        break
-
-                if not found:
-                    self.files.append(data_file)
+        self.files = add_directory(
+            directory=dirpath,
+            directory_label=dv_dir,
+            ignore=ignores,
+        )
 
     @staticmethod
     def _has_hidden_dir(path: str, dirpath: str) -> bool:
@@ -234,6 +190,7 @@ class Dataset(BaseModel):
         self,
         dataverse_name: str,
         content_loc: Optional[str] = None,
+        n_parallel: int = 1,
     ) -> str:
         """Uploads a given dataset to a Dataverse installation specified in the environment variable.
 
@@ -253,6 +210,7 @@ class Dataset(BaseModel):
             DATAVERSE_URL=str(self.DATAVERSE_URL),
             API_TOKEN=str(self.API_TOKEN),
             content_loc=content_loc,
+            n_parallel=n_parallel,
         )
 
         return self.p_id
@@ -279,20 +237,17 @@ class Dataset(BaseModel):
             json_data=self.dataverse_dict()["datasetVersion"],
             p_id=self.p_id,  # type: ignore
             files=self.files,
-            DATAVERSE_URL=self.DATAVERSE_URL,
+            DATAVERSE_URL=self.DATAVERSE_URL,  # type: ignore
             API_TOKEN=self.API_TOKEN,
             content_loc=content_loc,
         )
 
     # ! Validation
-    def _validate_required_fields(self) -> bool:
+    def _validate_required_fields(self):
         """Validates whether all required fields are present and not empty.
 
         Raises:
             ValueError: If a required field is not present or empty.
-
-        Returns:
-            bool: True if all required fields are present and not empty, False otherwise.
         """
 
         results = []
@@ -366,7 +321,7 @@ class Dataset(BaseModel):
     def list_files(self):
         """Lists all files present in the dataset for inspection"""
         for file in self.files:
-            print(f"{file.file_pid}\t{file.filename}")
+            print(f"{file.file_id}\t{file.fileName}")
 
     def replace_file(self, filename: str, local_path: str):
         """Replaces a given file which will be uploaded upon calling the 'update'-method
@@ -377,7 +332,7 @@ class Dataset(BaseModel):
         'download_files' set to 'False'.
         """
 
-        file = list(filter(lambda f: f.filename == filename, self.files))
+        file = list(filter(lambda f: f.fileName == filename, self.files))
 
         if len(file) == 0:
             raise ValueError(
