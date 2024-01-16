@@ -31,6 +31,7 @@ setup(
         "aiohttp",
         "aiodns",
         "dvuploader",
+        "email_validator",
     ],
     extras_require={"test": ["pytest-cov"]},
 )
