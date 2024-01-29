@@ -6,6 +6,7 @@ import xmltodict
 from anytree import Node, RenderTree
 from enum import Enum
 from pydantic import BaseModel, ConfigDict
+from pydantic_core import Url
 from typing import Dict, Optional, get_args
 
 
@@ -130,6 +131,8 @@ class DataverseBase(BaseModel):
             # Convert date to string
             if isinstance(value, (datetime.date, datetime.datetime)):
                 value = value.strftime("%Y-%m-%d")
+            if isinstance(value, Url):
+                value = str(value)
 
             json_obj.update(
                 {
