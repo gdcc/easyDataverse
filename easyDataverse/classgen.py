@@ -183,6 +183,7 @@ def prepare_field_meta(field: Dict) -> FieldInfo:
         "multiple": is_multiple,
         "typeClass": type_class,
         "typeName": field["name"],
+        "alias": field["name"],
         "description": field["description"],
     }
 

@@ -15,6 +15,7 @@ class DataverseBase(BaseModel):
         validate_default=True,
         validate_assignment=True,
         use_enum_values=True,
+        populate_by_name=True,
     )
 
     @classmethod
@@ -47,7 +48,14 @@ class DataverseBase(BaseModel):
         """Returns a JSON representation of the dataverse object."""
 
         # Read the JSON to filter empty compounds
-        json_obj = json.loads(super().json(exclude_none=True, indent=indent, **kwargs))
+        json_obj = json.loads(
+            super().model_dump_json(
+                exclude_none=True,
+                indent=indent,
+                by_alias=True,
+                **kwargs,
+            )
+        )
 
         return json.dumps(
             {key: value for key, value in json_obj.items() if value != []},
@@ -67,7 +75,7 @@ class DataverseBase(BaseModel):
         """Returns a dictionary representation of the dataverse object."""
 
         # Get the dictionary function from pyDantic
-        fields = super().model_dump(**dictkwargs)
+        fields = super().model_dump(**dictkwargs, by_alias=True)
 
         return {
             key: value for key, value in fields.items() if value != {} and value != []

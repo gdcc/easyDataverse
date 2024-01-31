@@ -32,7 +32,7 @@ class Dataset(BaseModel):
         extra="allow",
     )
 
-    metadatablocks: Dict[str, Any] = dict()
+    metadatablocks: Dict[str, DataverseBase] = dict()
     p_id: Optional[str] = None
     files: List[File] = Field(default_factory=list)
 
@@ -75,13 +75,6 @@ class Dataset(BaseModel):
             directoryLabel=dv_dir,
             description=description,
         )
-
-        # file = File(
-        #     filename=filename,
-        #     dv_dir=dv_dir,
-        #     local_path=local_path,
-        #     description=description,
-        # )
 
         if file not in self.files:
             self.files.append(file)
