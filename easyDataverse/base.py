@@ -6,7 +6,6 @@ import xmltodict
 from anytree import Node, RenderTree
 from enum import Enum
 from pydantic import BaseModel, ConfigDict
-from pydantic_core import Url
 from typing import Dict, Optional, get_args
 
 
