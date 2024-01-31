@@ -394,7 +394,7 @@ def process_name(attr_name, common_part):
     Returns:
         str: The processed attribute name.
     """
-    return camel_to_snake(attr_name).replace(common_part, "", 1)
+    return camel_to_snake(attr_name).replace(common_part, "", 1).replace(" ", "")
 
 
 def find_common_name_part(names: List[str]):
