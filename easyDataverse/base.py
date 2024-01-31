@@ -122,16 +122,15 @@ class DataverseBase(BaseModel):
                 else:
                     value = value.dataverse_dict()
 
-            # Assign everything
             if isinstance(value, list):
                 # TODO Refactor to separate check
                 if all(isinstance(val, Enum) for val in value):
                     value = [val.value for val in value]
-
-            # Convert date to string
-            if isinstance(value, (datetime.date, datetime.datetime)):
+            elif isinstance(value, dict):
+                pass
+            elif isinstance(value, (datetime.date, datetime.datetime)):
                 value = value.strftime("%Y-%m-%d")
-            if isinstance(value, Url):
+            else:
                 value = str(value)
 
             json_obj.update(
