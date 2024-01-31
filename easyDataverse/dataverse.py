@@ -1,8 +1,7 @@
 import asyncio
 from copy import deepcopy
 import json
-import os
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple, IO
 from urllib import parse
 
 import requests
@@ -411,12 +410,12 @@ class Dataverse(BaseModel):
         return self._extract_data(compound, tree)
 
     # ! Importers
-    def dataset_from_json(self, path: str) -> Dataset:
+    def dataset_from_json(self, handler: IO) -> Dataset:
         """
         Creates a dataset object from a JSON file.
 
         Args:
-            path (str): The path to the JSON file.
+            handler (IO): The file handler for the JSON file.
 
         Returns:
             Dataset: The created dataset object.
@@ -424,11 +423,11 @@ class Dataverse(BaseModel):
         Raises:
             AssertionError: If the Dataverse installation is not connected or if the file does not exist.
         """
+
         assert self._connected, "Please connect to a Dataverse installation first."
-        assert os.path.exists(path), "File does not exist."
 
         dataset = self.create_dataset()
-        data = json.load(open(path))
+        data = json.load(handler)
 
         # Map metadatablocks to dataset
         self._map_blocks_to_dataset(dataset, data)
@@ -445,6 +444,7 @@ class Dataverse(BaseModel):
         Returns:
             Dataset: The dataset object created from the JSON string.
         """
+
         assert self._connected, "Please connect to a Dataverse installation first."
 
         dataset = self.create_dataset()
