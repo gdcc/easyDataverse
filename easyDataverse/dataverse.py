@@ -1,5 +1,7 @@
 import asyncio
 from copy import deepcopy
+import json
+import os
 from typing import Callable, Dict, List, Optional, Tuple
 from urllib import parse
 
@@ -8,6 +10,7 @@ from anytree import Node, findall_by_attr
 from dotted_dict import DottedDict
 from pydantic import UUID4, BaseModel, ConfigDict, Field, HttpUrl, PrivateAttr
 from pyDataverse.api import DataAccessApi, NativeApi
+import rich
 
 from .classgen import create_dataverse_class, remove_child_fields_from_global
 from .connect import fetch_metadatablocks, gather_metadatablock_names
@@ -48,6 +51,7 @@ class Dataverse(BaseModel):
     )
 
     _dataset_gen: Callable = PrivateAttr(default=None)
+    _connected: bool = PrivateAttr(default=False)
 
     def __init__(
         self,
@@ -110,6 +114,7 @@ class Dataverse(BaseModel):
         asyncio.run(asyncio.gather(*tasks))  # type: ignore
 
         self._dataset_gen = lambda: deepcopy(dataset)
+        self._connected = True
 
         print("Connection successfuly established!")
 
@@ -404,3 +409,79 @@ class Dataverse(BaseModel):
             ]
 
         return self._extract_data(compound, tree)
+
+    # ! Importers
+    def dataset_from_json(self, path: str) -> Dataset:
+        """
+        Creates a dataset object from a JSON file.
+
+        Args:
+            path (str): The path to the JSON file.
+
+        Returns:
+            Dataset: The created dataset object.
+
+        Raises:
+            AssertionError: If the Dataverse installation is not connected or if the file does not exist.
+        """
+        assert self._connected, "Please connect to a Dataverse installation first."
+        assert os.path.exists(path), "File does not exist."
+
+        dataset = self.create_dataset()
+        data = json.load(open(path))
+
+        # Map metadatablocks to dataset
+        self._map_blocks_to_dataset(dataset, data)
+
+        return dataset
+
+    def dataset_from_json_string(self, json_string: str) -> Dataset:
+        """
+        Creates a dataset object from a JSON string representation.
+
+        Args:
+            json_string (str): The JSON string representation of the dataset.
+
+        Returns:
+            Dataset: The dataset object created from the JSON string.
+        """
+        assert self._connected, "Please connect to a Dataverse installation first."
+
+        dataset = self.create_dataset()
+        data = json.loads(json_string)
+
+        # Map metadatablocks to dataset
+        self._map_blocks_to_dataset(dataset, data)
+
+        return dataset
+
+    def _map_blocks_to_dataset(self, dataset: Dataset, data: Dict) -> None:
+        """
+        Maps the metadatablocks to the dataset object.
+
+        Args:
+            dataset (Dataset): The dataset object to map the metadatablocks to.
+            data (Dict): The dictionary containing the metadatablocks.
+
+        Returns:
+            None
+        """
+
+        assert "metadatablocks" in data, "No metadatablocks found in JSON."
+        assert isinstance(
+            data["metadatablocks"], dict
+        ), "Metadatablocks must be a dictionary."
+
+        for name, content in data["metadatablocks"].items():
+            if not hasattr(dataset, name):
+                rich.print(
+                    f"[bold red]Warning:[/bold red] Metadatablock '{name}' not available at '{self.server_url}'."
+                )
+
+            block = getattr(dataset, name)
+            dataset.metadatablocks[name] = block.__class__(**content)
+            setattr(
+                dataset,
+                name,
+                dataset.metadatablocks[name],
+            )
