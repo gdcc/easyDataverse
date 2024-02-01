@@ -100,7 +100,11 @@ class Dataverse(BaseModel):
                 "The Dataverse installation is not compatible with easyDataverse. Please use a Dataverse installation >= 5.13.x"
             )
 
-        dataset = Dataset(API_TOKEN=str(self.api_token), DATAVERSE_URL=self.server_url)
+        dataset = Dataset(
+            API_TOKEN=str(self.api_token),
+            DATAVERSE_URL=str(self.server_url),
+        )
+
         block_names = gather_metadatablock_names(str(self.server_url))
         all_blocks = asyncio.run(
             fetch_metadatablocks(
@@ -278,7 +282,10 @@ class Dataverse(BaseModel):
             version = "latest"
 
         endpoint = f"/api/datasets/:persistentId/?persistentId={pid}"
-        url = parse.urljoin(self.server_url, endpoint)  # type: ignore
+        url = parse.urljoin(
+            str(self.server_url),
+            endpoint,
+        )  # type: ignore
         header = {}
 
         if self.api_token is not None:
@@ -299,9 +306,14 @@ class Dataverse(BaseModel):
         """Fetches all files of a dataset."""
 
         if self.api_token:
-            data_api = DataAccessApi(self.server_url, str(self.api_token))
+            data_api = DataAccessApi(
+                str(self.server_url),
+                str(self.api_token),
+            )
         else:
-            data_api = DataAccessApi(self.server_url)
+            data_api = DataAccessApi(
+                str(self.server_url),
+            )
 
         download_files(
             data_api,
