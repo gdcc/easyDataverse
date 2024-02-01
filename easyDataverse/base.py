@@ -59,6 +59,7 @@ class DataverseBase(BaseModel):
         return json.dumps(
             {key: value for key, value in json_obj.items() if value != []},
             indent=indent,
+            default=str,
         )
 
     def yaml(self):
