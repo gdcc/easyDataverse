@@ -19,10 +19,10 @@ from easyDataverse.utils import YAMLDumper
 # are required.
 REQUIRED_FIELDS = [
     "citation/title",
-    "citation/author/name",
-    "citation/dataset_contact/name",
-    "citation/dataset_contact/email",
-    "citation/ds_description/value",
+    "citation/author/authorName",
+    "citation/datasetContact/datasetContactName",
+    "citation/datasetContact/datasetContactEmail",
+    "citation/dsDescription/dsDescriptionValue",
     "citation/subject",
 ]
 
@@ -176,7 +176,7 @@ class Dataset(BaseModel):
 
     def json(self) -> str:
         """Exports the dataset as a JSON file that can also be read by the API"""
-        return json.dumps(self.dict(), indent=4)
+        return json.dumps(self.dict(), indent=4, default=str)
 
     # ! Dataverse interfaces
     def upload(
