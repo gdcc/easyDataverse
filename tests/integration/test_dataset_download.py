@@ -16,7 +16,7 @@ class TestDatasetDownload:
 
         # Arrange
         base_url, api_token = credentials
-        url = f"{base_url}/api/dataverses/root/datasets"
+        url = f"{base_url}api/dataverses/root/datasets"
         response = requests.post(
             url=url,
             json=minimal_upload,

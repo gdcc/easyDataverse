@@ -16,7 +16,7 @@ class TestDatasetUpdate:
 
         # Arrange
         base_url, api_token = credentials
-        url = f"{base_url}/api/dataverses/root/datasets"
+        url = f"{base_url}api/dataverses/root/datasets"
         response = requests.post(
             url=url,
             json=minimal_upload,
@@ -41,9 +41,7 @@ class TestDatasetUpdate:
         dataset.update()
 
         # Re-fetch the dataset
-        url = (
-            f"{base_url}/api/datasets/:persistentId/versions/:draft?persistentId={pid}"
-        )
+        url = f"{base_url}api/datasets/:persistentId/versions/:draft?persistentId={pid}"
 
         response = requests.get(
             url,
