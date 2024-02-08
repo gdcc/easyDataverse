@@ -25,7 +25,7 @@ REQUIRED_FIELDS = [
     "citation/dsDescription/dsDescriptionValue",
     "citation/subject",
 ]
-^
+
 
 class Dataset(BaseModel):
     model_config = ConfigDict(
