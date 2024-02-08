@@ -1,7 +1,7 @@
 import json
 import os
 from json import dumps
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 import nob
 import xmltodict
@@ -25,7 +25,7 @@ REQUIRED_FIELDS = [
     "citation/dsDescription/dsDescriptionValue",
     "citation/subject",
 ]
-
+^
 
 class Dataset(BaseModel):
     model_config = ConfigDict(
@@ -308,13 +308,13 @@ class Dataset(BaseModel):
     def list_metadatablocks(self):
         """Lists all metadatablocks present in this dataset instance"""
 
-        for block in self.metadatablocks.values():
-            print(block._metadatablock_name)
+        for name in self.metadatablocks:
+            print(name)
 
     def list_files(self):
         """Lists all files present in the dataset for inspection"""
         for file in self.files:
-            print(f"{file.file_id}\t{file.fileName}")
+            print(file.filepath)
 
     def replace_file(self, filename: str, local_path: str):
         """Replaces a given file which will be uploaded upon calling the 'update'-method
