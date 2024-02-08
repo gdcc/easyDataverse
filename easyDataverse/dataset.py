@@ -230,8 +230,8 @@ class Dataset(BaseModel):
             json_data=self.dataverse_dict()["datasetVersion"],
             p_id=self.p_id,  # type: ignore
             files=self.files,
-            DATAVERSE_URL=self.DATAVERSE_URL,  # type: ignore
-            API_TOKEN=self.API_TOKEN,
+            DATAVERSE_URL=str(self.DATAVERSE_URL),  # type: ignore
+            API_TOKEN=str(self.API_TOKEN),
             content_loc=content_loc,
         )
 
