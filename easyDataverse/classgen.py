@@ -180,11 +180,14 @@ def prepare_field_meta(field: Dict) -> FieldInfo:
         type_class = "primitive"
 
     field_parameters = {
+        "alias": field["name"],
+        "description": field["description"],
+    }
+
+    json_schema_extra = {
         "multiple": is_multiple,
         "typeClass": type_class,
         "typeName": field["name"],
-        "alias": field["name"],
-        "description": field["description"],
     }
 
     if is_multiple:
@@ -192,7 +195,10 @@ def prepare_field_meta(field: Dict) -> FieldInfo:
     else:
         field_parameters["default"] = None
 
-    return Field(**field_parameters)
+    return Field(
+        **field_parameters,
+        json_schema_extra=json_schema_extra,
+    )
 
 
 def generate_add_function(subclass, attribute, name):
