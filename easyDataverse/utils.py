@@ -23,12 +23,16 @@ def download_files(
 ) -> None:
     """Downloads and adds all files given in the dataset to the Dataset-Object"""
 
+    if len(files_list) == 0:
+        return
+
     if filedir is not None:
         # Set up the progress bar
         files_list = tqdm.tqdm(files_list, file=sys.stdout)  # type: ignore
         files_list.set_description(f"Downloading data files")  # type: ignore
 
     for file in files_list:
+
         # Get file metdata
         filename = file["dataFile"]["filename"]
         file_pid = file["dataFile"]["id"]
@@ -37,12 +41,10 @@ def download_files(
             # Just download the necessary files
             continue
 
-        description = file["dataFile"].get("description")
         directory_label = file.get("directoryLabel")
 
         if filedir is not None:
             # Get the content
-
             response = data_api.get_datafile(file_pid)
 
             if response.status_code != 200:
@@ -64,8 +66,8 @@ def download_files(
         # Create the file object
         datafile = File(
             filepath=local_path,
-            description=description,
             file_id=str(file_pid),
+            **file,
         )
 
         dataset.files.append(datafile)
