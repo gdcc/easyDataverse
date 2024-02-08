@@ -65,7 +65,7 @@ def download_files(
         datafile = File(
             filepath=local_path,
             description=description,
-            file_id=file_pid,
+            file_id=str(file_pid),
         )
 
         dataset.files.append(datafile)
