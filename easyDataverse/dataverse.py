@@ -234,7 +234,7 @@ class Dataverse(BaseModel):
         pid: str,
         version: str = "latest",
         filedir: str = ".",
-        filenames: Optional[List[str]] = None,
+        filenames: List[str] = [],
         download_files: bool = True,
     ) -> Dataset:
         """Retrieves dataset from DOI if connected to an installation as a Dataset object.
@@ -301,7 +301,7 @@ class Dataverse(BaseModel):
         dataset: Dataset,
         files_list: List[Dict],
         filedir: str,
-        filenames: Optional[List[str]] = None,
+        filenames: List[str],
     ):
         """Fetches all files of a dataset."""
 
@@ -316,11 +316,11 @@ class Dataverse(BaseModel):
             )
 
         download_files(
-            data_api,
-            dataset,
-            files_list,
-            filedir,
-            filenames,
+            data_api=data_api,
+            dataset=dataset,
+            files_list=files_list,
+            filedir=filedir,
+            filenames=filenames,
         )
 
     def _construct_block_classes(
