@@ -182,7 +182,6 @@ class Dataset(BaseModel):
     def upload(
         self,
         dataverse_name: str,
-        content_loc: Optional[str] = None,
         n_parallel: int = 1,
     ) -> str:
         """Uploads a given dataset to a Dataverse installation specified in the environment variable.
@@ -190,7 +189,6 @@ class Dataset(BaseModel):
         Args:
             dataverse_name (str): Name of the target dataverse.
             filenames (List[str], optional): File or directory names which will be uploaded. Defaults to None.
-            content_loc (Optional[str], optional): If specified, the ZIP that is used to upload will be stored at the destination provided. Defaults to None.
         Returns:
             str: [description]
         """
@@ -202,16 +200,12 @@ class Dataset(BaseModel):
             p_id=self.p_id,
             DATAVERSE_URL=str(self.DATAVERSE_URL),
             API_TOKEN=str(self.API_TOKEN),
-            content_loc=content_loc,
             n_parallel=n_parallel,
         )
 
         return self.p_id
 
-    def update(
-        self,
-        content_loc: Optional[str] = None,
-    ):
+    def update(self):
         """Updates a given dataset if a p_id has been given.
 
         Use this function in conjunction with 'from_dataverse_doi' to edit and update datasets.
@@ -223,7 +217,6 @@ class Dataset(BaseModel):
         Args:
             contact_name (str, optional): Name of the contact. Defaults to None.
             contact_mail (str, optional): Mail of the contact. Defaults to None.
-            content_loc (Optional[str], optional): If specified, the ZIP that is used to upload will be stored at the destination provided. Defaults to None.
         """
         self._validate_required_fields()
         update_dataset(
@@ -232,7 +225,6 @@ class Dataset(BaseModel):
             files=self.files,
             DATAVERSE_URL=str(self.DATAVERSE_URL),  # type: ignore
             API_TOKEN=str(self.API_TOKEN),
-            content_loc=content_loc,
         )
 
     # ! Validation
