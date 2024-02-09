@@ -1,5 +1,3 @@
-import os
-import json
 import requests
 
 from urllib.parse import urljoin
@@ -16,7 +14,6 @@ def upload_to_dataverse(
     files: List[File] = [],
     p_id: Optional[str] = None,
     n_parallel: int = 1,
-    content_loc: Optional[str] = None,
     DATAVERSE_URL: Optional[str] = None,
     API_TOKEN: Optional[str] = None,
 ) -> str:
@@ -27,7 +24,6 @@ def upload_to_dataverse(
         dataverse_name (str): Name of the Dataverse where the data will be uploaded to.
         files (List[str], optional): List of files that should be uploaded. Can also include durectory names. Defaults to None.
         p_id (Optional[str], optional): Persitent Identifier of the dataset. Defaults to None.
-        content_loc (Optional[str]): If specified, the ZIP that is used to upload will be stored at the destination provided. Defaults to None.
 
 
     Raises:
@@ -107,7 +103,6 @@ def update_dataset(
     p_id: str,
     json_data: dict,
     files: List[File],
-    content_loc: Optional[str] = None,
     DATAVERSE_URL: Optional[str] = None,
     API_TOKEN: Optional[str] = None,
 ) -> bool:
@@ -117,7 +112,6 @@ def update_dataset(
         p_id (str): Persistent ID of the dataset.
         json_data (dict): Dataverse JSON representation of the dataset.
         files (List[File]): List of files that should be uploaded. Can also include directory names.
-        content_loc (Optional[str], optional): If specified, the ZIP that is used to upload will be stored at the destination provided. Defaults to None.
         DATAVERSE_URL (Optional[str], optional): The URL of the Dataverse instance. Defaults to None.
         API_TOKEN (Optional[str], optional): The API token for authentication. Defaults to None.
 
