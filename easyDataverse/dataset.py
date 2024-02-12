@@ -4,6 +4,7 @@ from json import dumps
 from typing import Dict, List, Optional
 
 import nob
+import rich
 import xmltodict
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
@@ -297,11 +298,14 @@ class Dataset(BaseModel):
         return len(results) == 0
 
     # ! Utilities
-    def list_metadatablocks(self):
+    def list_metadatablocks(self, detailed: bool = False):
         """Lists all metadatablocks present in this dataset instance"""
 
-        for name in self.metadatablocks:
-            print(name)
+        for name, block in self.metadatablocks.items():
+            if detailed:
+                block.info()
+            else:
+                print(name)
 
     def list_files(self):
         """Lists all files present in the dataset for inspection"""
