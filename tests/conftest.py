@@ -12,7 +12,7 @@ def credentials():
         tuple: A tuple containing the base URL and API token.
     """
     return (
-        os.environ.get("BASE_URL"),
+        os.environ.get("BASE_URL").rstrip("/"),
         os.environ.get("API_TOKEN"),
     )
 

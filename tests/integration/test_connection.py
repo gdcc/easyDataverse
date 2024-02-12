@@ -16,7 +16,7 @@ class TestConnection:
         )
 
         # Assert
-        assert str(dataverse.server_url) == base_url
+        assert str(dataverse.server_url).rstrip("/") == base_url
         assert str(dataverse.api_token) == api_token
         assert isinstance(dataverse.native_api, NativeApi)
 
@@ -34,7 +34,7 @@ class TestConnection:
 
         # Assert
         assert str(dataset.API_TOKEN) == api_token
-        assert str(dataset.DATAVERSE_URL) == base_url
+        assert str(dataset.DATAVERSE_URL).rstrip("/") == base_url
         assert len(dataset.metadatablocks) > 0
         assert hasattr(dataset, "citation")
 
