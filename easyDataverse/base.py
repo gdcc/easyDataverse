@@ -1,9 +1,10 @@
 import datetime
 import json
+import rich
 import yaml
 import xmltodict
 
-from anytree import Node, RenderTree
+from anytree import Node, RenderTree, ContRoundStyle
 from enum import Enum
 from pydantic import BaseModel, ConfigDict
 from typing import Dict, Optional, get_args
@@ -179,33 +180,81 @@ class DataverseBase(BaseModel):
         return False
 
     @classmethod
-    def info(cls) -> None:
+    def info(
+        cls,
+        schema: bool = True,
+        functions: bool = True,
+    ) -> None:
         """Displays the schema tree described within this class"""
 
-        print(RenderTree(cls._create_tree()).by_attr("name"))
+        rich.print(
+            RenderTree(
+                style=ContRoundStyle(),
+                node=cls._create_tree(
+                    functions=functions,
+                    schema=schema,
+                    printing=True,
+                ),
+            ).by_attr("name")
+        )
 
     @classmethod
-    def _create_tree(cls, parent: Optional[Node] = None) -> Node:
+    def _create_tree(
+        cls,
+        schema: bool = True,
+        functions: bool = False,
+        parent: Optional[Node] = None,
+        printing: bool = False,
+    ) -> Node:
         """Creates a tree from the given metadatablock/compound"""
 
+        if printing:
+            attribute = "[bold]{0}[/bold]: [italic]{1}[/italic]"
+            block = "[bold cyan2]{0}[/bold cyan2]"
+        else:
+            attribute = "{0}"
+            block = "{0}"
+
         if parent is None:
-            root = Node(cls.__name__)
+            root = Node(block.format(cls.__name__))
             root.parent = parent
         else:
             root = parent
 
-        for name, field in cls.model_fields.items():
-            node = Node(name)
-            node.typeName = field.json_schema_extra["typeName"]
-            node.typeClass = field.json_schema_extra["typeClass"]
-            node.parent = root
+        if schema:
+            for name, field in cls.model_fields.items():
+                if get_args(field.annotation):
+                    dtype = get_args(field.annotation)[0]
+                else:
+                    dtype = field.annotation
 
-            if get_args(field.annotation):
-                dtype = get_args(field.annotation)[0]
-            else:
-                dtype = field.annotation
+                dtype_name = dtype.__name__
 
-            if hasattr(dtype, "model_fields"):
-                dtype._create_tree(parent=node)
+                if dtype_name == "Annotated":
+                    dtype_name = dtype.__origin__.__name__
+
+                node = Node(attribute.format(name, dtype_name))
+                node.typeName = field.json_schema_extra["typeName"]
+                node.typeClass = field.json_schema_extra["typeClass"]
+                node.parent = root
+
+                if hasattr(dtype, "model_fields"):
+                    dtype._create_tree(
+                        parent=node,
+                        functions=functions,
+                        schema=schema,
+                    )
+
+        add_funs = [key for key in cls.__dict__.keys() if key.startswith("add_")]
+        if functions and add_funs:
+            function_root = Node("[bold italic]Add Functions[/bold italic]")
+            function_root.parent = root
+
+            for key in cls.__dict__.keys():
+                if not key.startswith("add_"):
+                    continue
+
+                node = Node(key)
+                node.parent = function_root
 
         return root
