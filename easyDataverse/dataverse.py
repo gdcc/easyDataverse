@@ -175,6 +175,27 @@ class Dataverse(BaseModel):
 
         return False
 
+    # ! Printers
+    def list_metadatablocks(self, detailed: bool = False):
+        """
+        Lists the metadata blocks available in the connected Dataverse instance.
+
+        Args:
+            detailed (bool, optional): If True, provides detailed information about each metadata block.
+                Defaults to False.
+
+        Raises:
+            AssertionError: If not connected to a Dataverse instance.
+
+        Returns:
+            None
+        """
+        assert (
+            self._connected
+        ), "Please connect to a Dataverse instance to list metadatablocks."
+
+        self.create_dataset().list_metadatablocks(detailed=detailed)
+
     # ! Dataset Handlers
 
     def create_dataset(self) -> Dataset:
