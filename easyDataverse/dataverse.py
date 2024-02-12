@@ -5,6 +5,8 @@ from typing import Callable, Dict, List, Optional, Tuple, IO
 from urllib import parse
 
 import requests
+from rich.panel import Panel
+from rich.progress import Progress, SpinnerColumn, TextColumn
 from anytree import Node, findall_by_attr
 from dotted_dict import DottedDict
 from pydantic import UUID4, BaseModel, ConfigDict, Field, HttpUrl, PrivateAttr
@@ -93,33 +95,48 @@ class Dataverse(BaseModel):
             Dataset: Object that contains all metadatablocks
         """
 
-        print(f"Connecting to {self.server_url}")
-
         if not self._version_is_compliant():
             raise ValueError(
                 "The Dataverse installation is not compatible with easyDataverse. Please use a Dataverse installation >= 5.13.x"
             )
 
-        dataset = Dataset(
-            API_TOKEN=str(self.api_token),
-            DATAVERSE_URL=str(self.server_url),
+        progress = Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
         )
 
-        block_names = gather_metadatablock_names(str(self.server_url))
-        all_blocks = asyncio.run(
-            fetch_metadatablocks(
-                block_names,
-                base_url=str(self.server_url),
+        print("\n")
+        task = progress.add_task(f"Connecting to {str(self.server_url)}...", total=1)
+
+        with progress:
+            dataset = Dataset(
+                API_TOKEN=str(self.api_token),
+                DATAVERSE_URL=str(self.server_url),
             )
-        )
 
-        tasks = [self._process_metadatablock(dataset, block) for block in all_blocks]
-        asyncio.run(asyncio.gather(*tasks))  # type: ignore
+            block_names = gather_metadatablock_names(str(self.server_url))
+            all_blocks = asyncio.run(
+                fetch_metadatablocks(
+                    block_names,
+                    base_url=str(self.server_url),
+                )
+            )
 
-        self._dataset_gen = lambda: deepcopy(dataset)
-        self._connected = True
+            tasks = [
+                self._process_metadatablock(dataset, block) for block in all_blocks
+            ]
+            asyncio.run(asyncio.gather(*tasks))  # type: ignore
 
-        print("Connection successfuly established!")
+            self._dataset_gen = lambda: deepcopy(dataset)
+            self._connected = True
+
+            progress.update(
+                task,
+                completed=1,
+                visible=False,
+            )
+
+            rich.print(f"🎉 [bold]Connected to '{self.server_url}'[/bold]")
 
     async def _process_metadatablock(
         self,
@@ -271,6 +288,8 @@ class Dataverse(BaseModel):
             Dataset: The dataset.
         """
 
+        rich.print(f"[bold]Fetching dataset '{pid}' from '{self.server_url}'[/bold]\n")
+
         # Create a blank dataset
         dataset = self.create_dataset()
 
@@ -278,14 +297,31 @@ class Dataverse(BaseModel):
         remote_ds = self._fetch_dataset(pid, version)
         dataset.p_id = remote_ds.data.latestVersion.datasetPersistentId  # type: ignore
         blocks = remote_ds.data.latestVersion.metadataBlocks  # type: ignore
+        files = remote_ds.data.latestVersion.files  # type: ignore
 
         # Process metadatablocks and files
         self._construct_block_classes(blocks, dataset)
 
+        info = "\n".join(
+            [
+                f"Title: [bold]{dataset.citation.title}[/bold]",
+                f"Version: {version}",
+                f"Files: {len(files)}",
+            ]
+        )
+
+        panel = Panel(
+            info,
+            title="[bold]Dataset Information[/bold]",
+            expand=False,
+        )
+
+        rich.print(panel)
+
         if download_files:
             self._fetch_files(
                 dataset,
-                remote_ds.data.latestVersion.files,  # type: ignore
+                files,  # type: ignore
                 filedir,
                 filenames,
             )
@@ -332,17 +368,21 @@ class Dataverse(BaseModel):
                 str(self.api_token),
             )
         else:
-            data_api = DataAccessApi(
-                str(self.server_url),
-            )
+            data_api = DataAccessApi(str(self.server_url))
 
-        download_files(
-            data_api=data_api,
-            dataset=dataset,
-            files_list=files_list,
-            filedir=filedir,
-            filenames=filenames,
+        if len(files_list) == 0:
+            return
+
+        files = asyncio.run(
+            download_files(
+                data_api=data_api,
+                files_list=files_list,
+                filedir=filedir,
+                filenames=filenames,
+            )
         )
+
+        dataset.files += files
 
     def _construct_block_classes(
         self,
