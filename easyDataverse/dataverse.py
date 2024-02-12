@@ -111,7 +111,7 @@ class Dataverse(BaseModel):
         with progress:
             dataset = Dataset(
                 API_TOKEN=str(self.api_token),
-                DATAVERSE_URL=str(self.server_url),
+                DATAVERSE_URL=self.server_url,
             )
 
             block_names = gather_metadatablock_names(str(self.server_url))
@@ -304,7 +304,7 @@ class Dataverse(BaseModel):
 
         info = "\n".join(
             [
-                f"Title: [bold]{dataset.citation.title}[/bold]",
+                f"Title: [bold]{dataset.citation.title}[/bold]",  # type: ignore
                 f"Version: {version}",
                 f"Files: {len(files)}",
             ]
