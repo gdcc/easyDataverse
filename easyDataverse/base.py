@@ -228,7 +228,10 @@ class DataverseBase(BaseModel):
                 else:
                     dtype = field.annotation
 
-                dtype_name = dtype.__name__
+                try:
+                    dtype_name = dtype.__name__
+                except AttributeError:
+                    dtype_name = dtype.__class__.__name__
 
                 if dtype_name == "Annotated":
                     dtype_name = dtype.__origin__.__name__
