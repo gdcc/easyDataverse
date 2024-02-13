@@ -1,14 +1,14 @@
 import asyncio
 import os
+import re
 from typing import Dict, List
+
 import aiofiles
 import aiohttp
 import rich
-
-from rich.progress import Progress, TaskID
-from pyDataverse.api import DataAccessApi
-
 from dvuploader import File
+from pyDataverse.api import DataAccessApi
+from rich.progress import Progress, TaskID
 
 CHUNK_SIZE = 10 * 1024**2  # 10 MB
 MAXIMUM_DISPLAYED_FILES = 40
@@ -203,7 +203,24 @@ def _filter_files(files: List[Dict], filenames: List[str]) -> List[Dict]:
             file["dataFile"]["filename"],
         )
 
-        if dv_path in filenames:
+        if _path_in_dvpaths(dv_path, filenames):
             to_download.append(file)
 
     return to_download
+
+
+def _path_in_dvpaths(
+    fpath: str,
+    to_match: List[str],
+) -> bool:
+    """
+    Check if the given file path matches any of the Dataverse paths.
+
+    Args:
+        fpath (str): The file path to check.
+        dv_paths (List[str]): List of Dataverse paths to compare against.
+
+    Returns:
+        bool: True if the file path matches any of the Dataverse paths, False otherwise.
+    """
+    return any(bool(re.match(pattern, fpath)) for pattern in to_match)
