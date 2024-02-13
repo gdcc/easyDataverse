@@ -4,7 +4,6 @@ from json import dumps
 from typing import Dict, List, Optional
 
 import nob
-import rich
 import xmltodict
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
