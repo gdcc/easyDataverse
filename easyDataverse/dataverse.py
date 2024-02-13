@@ -16,7 +16,7 @@ import rich
 from .classgen import create_dataverse_class, remove_child_fields_from_global
 from .connect import fetch_metadatablocks, gather_metadatablock_names
 from .dataset import Dataset
-from .utils import download_files
+from .downloader import download_files
 
 
 class Dataverse(BaseModel):
