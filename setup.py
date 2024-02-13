@@ -19,7 +19,6 @@ setup(
         "pydataverse",
         "pyaml",
         "xmltodict",
-        "tqdm",
         "typer",
         "python-forge",
         "anytree",
