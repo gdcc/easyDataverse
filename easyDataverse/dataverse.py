@@ -274,6 +274,7 @@ class Dataverse(BaseModel):
         filedir: str = ".",
         filenames: List[str] = [],
         download_files: bool = True,
+        n_parallel_downloads: int = 10,
     ) -> Dataset:
         """Retrieves dataset from DOI if connected to an installation as a Dataset object.
 
@@ -320,10 +321,11 @@ class Dataverse(BaseModel):
 
         if download_files:
             self._fetch_files(
-                dataset,
-                files,  # type: ignore
-                filedir,
-                filenames,
+                dataset=dataset,
+                files_list=files,  # type: ignore
+                filedir=filedir,
+                filenames=filenames,
+                n_parallel_downloads=n_parallel_downloads,
             )
 
         return dataset
@@ -359,6 +361,7 @@ class Dataverse(BaseModel):
         files_list: List[Dict],
         filedir: str,
         filenames: List[str],
+        n_parallel_downloads: int,
     ):
         """Fetches all files of a dataset."""
 
@@ -379,6 +382,7 @@ class Dataverse(BaseModel):
                 files_list=files_list,
                 filedir=filedir,
                 filenames=filenames,
+                n_parallel_downloads=n_parallel_downloads,
             )
         )
 

@@ -6,13 +6,13 @@ import aiohttp
 import rich
 
 from rich.progress import Progress, TaskID
-from rich.panel import Panel
 from pyDataverse.api import DataAccessApi
 import yaml
 
 from dvuploader import File
 
 CHUNK_SIZE = 10 * 1024**2  # 10 MB
+MAXIMUM_DISPLAYED_FILES = 40
 
 
 class YAMLDumper(yaml.Dumper):
@@ -25,31 +25,45 @@ async def download_files(
     files_list: List[Dict],
     filedir: str,
     filenames: List[str],
+    n_parallel_downloads: int,
 ) -> List[File]:
     """Downloads and adds all files given in the dataset to the Dataset-Object"""
 
     files_list = _filter_files(files_list, filenames)
     progress, task_ids = setup_progress_bars(files=files_list)
+    over_threshold = len(files_list) > MAXIMUM_DISPLAYED_FILES
 
     if len(files_list) == 0:
         return []
 
-    with progress:
+    if data_api.api_token:
+        headers = {"X-Dataverse-key": data_api.api_token}
+    else:
+        headers = {}
 
-        rich.print("\n[bold]Downloading files[/bold]\n")
+    connector = aiohttp.TCPConnector(limit=n_parallel_downloads)
+    async with aiohttp.ClientSession(
+        base_url=data_api.base_url,
+        connector=connector,
+        headers=headers,
+    ) as session:
 
-        tasks = [
-            _download_file(
-                file=file,
-                filedir=filedir,
-                data_api=data_api,
-                progress=progress,
-                task_id=task_id,
-            )
-            for file, task_id in zip(files_list, task_ids)
-        ]
+        with progress:
+            rich.print("\n[bold]Downloading files[/bold]\n")
 
-        files = await asyncio.gather(*tasks)
+            tasks = [
+                _download_file(
+                    session=session,
+                    file=file,
+                    filedir=filedir,
+                    progress=progress,
+                    task_id=task_id,
+                    over_threshold=over_threshold,
+                )
+                for file, task_id in zip(files_list, task_ids)
+            ]
+
+            files = await asyncio.gather(*tasks)
 
     rich.print("\n[bold]✅ Done [/bold]\n\n")
 
@@ -110,11 +124,12 @@ def setup_pbar(
 
 
 async def _download_file(
+    session: aiohttp.ClientSession,
     file: Dict,
     filedir: str,
-    data_api: DataAccessApi,
     progress: Progress,
     task_id: TaskID,
+    over_threshold: bool,
 ):
 
     # Get file metdata
@@ -128,25 +143,23 @@ async def _download_file(
     else:
         local_path = dv_path
 
-    if data_api.api_token:
-        headers = {"X-Dataverse-key": data_api.api_token}
-    else:
-        headers = {}
+    url = f"/api/access/datafile/{file_id}"
 
-    url = f"{data_api.base_url.rstrip('/')}/api/access/datafile/{file_id}"
+    async with session.get(url) as response:
+        response.raise_for_status()
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(url) as response:
-            response.raise_for_status()
-            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+        async with aiofiles.open(local_path, "wb") as f:
+            while True:
+                chunk = await response.content.read(CHUNK_SIZE)
+                progress.advance(task_id, advance=len(chunk))
 
-            async with aiofiles.open(local_path, "wb") as f:
-                while True:
-                    chunk = await response.content.read(CHUNK_SIZE)
-                    progress.advance(task_id, advance=len(chunk))
-                    if not chunk:
-                        break
-                    await f.write(chunk)
+                if over_threshold:
+                    progress.update(task_id, visible=False)
+
+                if not chunk:
+                    break
+                await f.write(chunk)
 
     return File(
         filepath=local_path,
