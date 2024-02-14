@@ -231,6 +231,8 @@ class Dataverse(BaseModel):
         api_token: Optional[str] = None,
         filedir: str = ".",
         download_files: bool = True,
+        filenames: List[str] = [],
+        n_parallel_downloads: int = 10,
     ) -> Tuple[Dataset, "Dataverse"]:
         """Fetches a dataset and Dataverse specific information from an URL.
 
@@ -243,6 +245,8 @@ class Dataverse(BaseModel):
             api_token (Optional[str], optional): API token to use for authentication. Defaults to None.
             filedir (str, optional): Directory to store the files in. Defaults to ".".
             download_files (bool, optional): Whether to download the files or not. Defaults to True.
+            filenames (Optional[List[str]], optional): List of filenames to download. Defaults to None.
+            n_parallel_downloads (int, optional): Number of parallel downloads. Defaults to 10.
 
         Returns:
             Tuple[Dataset, Dataverse]: The dataset and the Dataverse installation.
@@ -263,6 +267,8 @@ class Dataverse(BaseModel):
             version=version,
             filedir=filedir,
             download_files=download_files,
+            filenames=filenames,
+            n_parallel_downloads=n_parallel_downloads,
         )
 
         return dataset, dataverse
