@@ -30,6 +30,13 @@ cd easyDataverse
 python setup.py install
 ```
 
+MacOS users may need to install `hdf5`
+
+```
+brew install hdf5
+export HDF5_DIR=/opt/homebrew/Cellar/hdf5/1.12.2_2
+```
+
 ## ⚙️ Code generation
 
 EasyDataverse allows you to generate code based on given metadata configuration TSV files that are typically found in any Dataverse installation. In order to do so, you can use the dedicated command line interface:
