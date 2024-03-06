@@ -95,7 +95,7 @@ class Dataset(BaseModel):
             ignores (List[str], optional): List of extensions/directories that should be ignored. Defaults to [].
         """
 
-        self.files = add_directory(
+        self.files += add_directory(
             directory=dirpath,
             directory_label=dv_dir,
             ignore=ignores,
