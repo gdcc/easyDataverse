@@ -255,7 +255,12 @@ class Dataverse(BaseModel):
         # Extract parameters and server URL
         parsed_url = parse.urlparse(url)
         p_id = parse.parse_qs(parsed_url.query)["persistentId"][0]
-        version = parse.parse_qs(parsed_url.query)["version"][0]
+
+        try:
+            version = parse.parse_qs(parsed_url.query)["version"][0]
+        except KeyError:
+            version = "latest"
+
         server_url = parse.urlunparse(
             (parsed_url.scheme, parsed_url.netloc, "", "", "", "")
         )
