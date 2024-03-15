@@ -31,6 +31,7 @@ setup(
         "aiodns",
         "dvuploader",
         "email_validator",
+        "pandas",
     ],
     extras_require={"test": ["pytest-cov"]},
 )
