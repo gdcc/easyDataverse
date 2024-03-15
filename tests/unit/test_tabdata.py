@@ -1,9 +1,126 @@
 import pandas as pd
 import pytest
-from easyDataverse.tabdata import TabData
+from easyDataverse.tabdata import ColStats, TabData
 
 
 class TestTabData:
+
+    @pytest.mark.unit
+    def test_dict_export(self):
+        """
+        Test case for the dict export of the TabData class.
+
+        This test verifies that the dict export of the TabData class returns the expected dictionary.
+
+        Steps:
+        1. Create a new instance of the TabData class with a sample DataFrame.
+        2. Access the dict export of the tabular data instance.
+        3. Assert that the dict export returns the expected dictionary.
+
+        """
+        # Arrange
+        tab_data = TabData(
+            data=pd.DataFrame(
+                {
+                    "A": [1, 1, 1],
+                    "B": [1, 1, 1],
+                }
+            ),
+            name="some_name",
+            description="some_description",
+            directoryLabel="some_dir",
+        )
+
+        # Act
+        tab_data_dict = tab_data.to_dict()
+
+        # Assert
+        assert tab_data_dict == {
+            "name": "some_name",
+            "description": "some_description",
+            "directoryLabel": "some_dir",
+            "stats": {
+                "A": {
+                    "count": 3,
+                    "mean": 1.0,
+                    "median": 1.0,
+                    "std": 0.0,
+                    "min": 1.0,
+                    "max": 1.0,
+                    "25%": 1.0,
+                    "75%": 1.0,
+                },
+                "B": {
+                    "count": 3,
+                    "mean": 1.0,
+                    "median": 1.0,
+                    "std": 0.0,
+                    "min": 1.0,
+                    "max": 1.0,
+                    "25%": 1.0,
+                    "75%": 1.0,
+                },
+            },
+            "columns": {
+                "A": {"name": "A", "dtype": "int64"},
+                "B": {"name": "B", "dtype": "int64"},
+            },
+        }
+
+    @pytest.mark.unit
+    def test_stats(self):
+        """
+        Test case for the stats property of the TabData class.
+
+        This test verifies that the stats property returns the statistics of the tabular data.
+
+        Steps:
+        1. Create a new instance of the TabData class with a sample DataFrame.
+        2. Access the stats property of the tabular data instance.
+        3. Assert that the stats property returns the expected statistics.
+
+        """
+        # Arrange
+        tab_data = TabData(
+            data=pd.DataFrame(
+                {
+                    "A": [1, 1, 1],
+                    "B": [1, 1, 1],
+                }
+            ),
+            name="some_name",
+            description="some_description",
+            directoryLabel="some_dir",
+        )
+
+        # Act
+        stats = tab_data.stats
+        stats_dict = {k: v.model_dump(by_alias=True) for k, v in stats.items()}
+
+        # Assert
+        assert all(isinstance(v, ColStats) for v in stats.values())
+        assert stats_dict == {
+            "A": {
+                "count": 3,
+                "mean": 1.0,
+                "std": 0.0,
+                "min": 1.0,
+                "25%": 1.0,
+                "median": 1.0,
+                "75%": 1.0,
+                "max": 1.0,
+            },
+            "B": {
+                "count": 3,
+                "mean": 1.0,
+                "std": 0.0,
+                "min": 1.0,
+                "25%": 1.0,
+                "median": 1.0,
+                "75%": 1.0,
+                "max": 1.0,
+            },
+        }
 
     @pytest.mark.unit
     def test_prepare_upload_no_extension(self):
