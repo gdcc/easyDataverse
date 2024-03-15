@@ -236,6 +236,7 @@ class Dataverse(BaseModel):
         filedir: str = ".",
         download_files: bool = True,
         filenames: List[str] = [],
+        tabular_to_pandas: bool = True,
         n_parallel_downloads: int = 10,
     ) -> Tuple[Dataset, "Dataverse"]:
         """Fetches a dataset and Dataverse specific information from an URL.
@@ -278,6 +279,7 @@ class Dataverse(BaseModel):
             download_files=download_files,
             filenames=filenames,
             n_parallel_downloads=n_parallel_downloads,
+            tabular_to_pandas=tabular_to_pandas,
         )
 
         return dataset, dataverse
