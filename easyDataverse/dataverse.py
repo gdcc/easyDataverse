@@ -1,6 +1,7 @@
 import asyncio
 from copy import deepcopy
 import json
+import os
 from typing import Callable, Dict, List, Optional, Tuple, IO
 from urllib import parse
 
@@ -11,7 +12,10 @@ from anytree import Node, findall_by_attr
 from dotted_dict import DottedDict
 from pydantic import UUID4, BaseModel, ConfigDict, Field, HttpUrl, PrivateAttr
 from pyDataverse.api import DataAccessApi, NativeApi
+from dvuploader import File
 import rich
+
+from easyDataverse.tabdata import TabData
 
 from .classgen import create_dataverse_class, remove_child_fields_from_global
 from .connect import fetch_metadatablocks, gather_metadatablock_names
@@ -262,7 +266,7 @@ class Dataverse(BaseModel):
             version = "latest"
 
         server_url = parse.urlunparse(
-            (parsed_url.scheme, parsed_url.netloc, "", "", "", "")
+            (parsed_url.scheme, parsed_url.netltaoc, "", "", "", "")
         )
 
         # Instantiate and load the dataset
@@ -285,6 +289,7 @@ class Dataverse(BaseModel):
         filedir: str = ".",
         filenames: List[str] = [],
         download_files: bool = True,
+        tabular_to_pandas: bool = True,
         n_parallel_downloads: int = 10,
     ) -> Dataset:
         """Retrieves dataset from DOI if connected to an installation as a Dataset object.
@@ -337,6 +342,7 @@ class Dataverse(BaseModel):
                 filedir=filedir,
                 filenames=filenames,
                 n_parallel_downloads=n_parallel_downloads,
+                tabular_to_pandas=tabular_to_pandas,
             )
 
         return dataset
@@ -373,6 +379,7 @@ class Dataverse(BaseModel):
         filedir: str,
         filenames: List[str],
         n_parallel_downloads: int,
+        tabular_to_pandas: bool,
     ):
         """Fetches all files of a dataset."""
 
@@ -394,10 +401,16 @@ class Dataverse(BaseModel):
                 filedir=filedir,
                 filenames=filenames,
                 n_parallel_downloads=n_parallel_downloads,
+                tabular_to_pandas=tabular_to_pandas,
             )
         )
 
-        dataset.files += files
+        for file in files:
+            if isinstance(file, File):
+                dataset.files.append(file)
+            elif isinstance(file, TabData):
+                key = os.path.join(file.directoryLabel, file.name)
+                dataset.tables[key] = file
 
     def _construct_block_classes(
         self,
