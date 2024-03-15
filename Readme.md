@@ -40,6 +40,7 @@ python setup.py install
 EasyDataverse is capable of connecting to a given Dataverse installation and fetch all metadata fields and their properties. This allows you to create a dataset object with all the metadata fields and their properties given at the Dataverse installation.
 
 ```python
+import pandas as pd
 from easyDataverse import Dataverse
 
 # Connect to a Dataverse installation
@@ -61,6 +62,11 @@ dataset.citation.add_ds_description(value="This is a description of the dataset"
 # Upload files or directories
 dataset.add_file(local_path="./my.file", dv_dir="some/dir")
 dataset.add_directory(dirpath="./my_directory", dv_dir="some/dir")
+
+# You can also add Pandas DataFrames to upload tabular data
+# Please note, the Dataframe will always be uploaded as .tab file
+df = pd.from_csv("my.csv")
+dataset.add_dataframe(df, dv_dir="some/dir")
 
 # Upload to the dataverse instance
 dataset.upload("my_dataverse_id")
@@ -86,10 +92,23 @@ dataset, dataverse = Dataverse.from_ds_url(
 )
 
 # Display the content of the dataset
-print(dataset) 
+print(dataset)
 
-# Update metadata
+# If your dataset contains any tabular data files, these
+# will be provided as Pandas DataFrames in "dataset.tables"
+df = dataset.tables["some/dir/my.tab"]
+
+# You can edit the data in the DataFrame and update the dataset
+df["new_column"] = [1, 2, 3, 4, 5]
+
+# Of course, you can also update the metadata
 dataset.citation.title = "My even nicer dataset"
+
+# As well as add new files
+dataset.add_file(local_path="./my.file", dv_dir="some/dir")
+
+# In addition, any change made to a file will be
+# automatically detected and updated in the dataset
 
 # Synchronize with the dataverse instance
 dataset.update()
