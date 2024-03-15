@@ -1,5 +1,6 @@
 import json
 import os
+import pandas as pd
 from typing import Dict
 
 import pytest
@@ -178,6 +179,58 @@ class TestDatasetDownload:
             == open(dataset.files[0].filepath, "rb").read()
         ), "The file content does not match the expected file content."
 
+    @pytest.mark.integration
+    def test_dataset_download_with_tabular_data(
+        self,
+        credentials,
+        minimal_upload,
+    ):
+
+        # Arrange
+        base_url, api_token = credentials
+        url = f"{base_url}/api/dataverses/root/datasets"
+        response = requests.post(
+            url=url,
+            json=minimal_upload,
+            headers={
+                "X-Dataverse-key": api_token,
+                "Content-Type": "application/json",
+            },
+        )
+
+        response.raise_for_status()
+        pid = response.json()["data"]["persistentId"]
+
+        # Add a file to the dataset
+        url = f"{base_url}/api/datasets/:persistentId/add?persistentId={pid}"
+        json_data = {"description": "Test"}
+        response = requests.post(
+            url=url,
+            headers={
+                "X-Dataverse-key": api_token,
+            },
+            data={"jsonData": json.dumps(json_data)},
+            files={"file": open("tests/fixtures/data.tab", "rb")},
+        )
+
+        response.raise_for_status()
+
+        # Act
+        dataverse = Dataverse(
+            server_url=base_url,
+            api_token=api_token,
+        )
+
+        dataset = dataverse.load_dataset(pid)
+
+        self.wait_for_lock_removal(base_url, api_token, pid)
+
+        # Assert
+        assert "data.tab" in dataset.tables
+        assert dataset.tables["data.tab"].data.equals(
+            pd.read_csv("tests/fixtures/data.tab", sep="\t")
+        )
+
     @staticmethod
     def sort_citation(dataset: Dict):
         citation = dataset["datasetVersion"]["metadataBlocks"]["citation"]
@@ -188,3 +241,26 @@ class TestDatasetDownload:
         )
 
         return dataset
+
+    @staticmethod
+    def wait_for_lock_removal(base_url, api_token, pid):
+        url = f"{base_url}/api/datasets/:persistentId/locks?persistentId={pid}"
+        response = requests.get(
+            url=url,
+            headers={
+                "X-Dataverse-key": api_token,
+            },
+        )
+
+        response.raise_for_status()
+        locks = response.json()["data"]
+        while locks:
+            response = requests.get(
+                url=url,
+                headers={
+                    "X-Dataverse-key": api_token,
+                },
+            )
+
+            response.raise_for_status()
+            locks = response.json()["data"]
