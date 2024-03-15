@@ -96,7 +96,7 @@ print(dataset)
 
 # If your dataset contains any tabular data files, these
 # will be provided as Pandas DataFrames in "dataset.tables"
-df = dataset.tables["some/dir/my.tab"]
+df = dataset.tables["some/dir/my.tab"].data
 
 # You can edit the data in the DataFrame and update the dataset
 df["new_column"] = [1, 2, 3, 4, 5]
