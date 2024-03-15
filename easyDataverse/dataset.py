@@ -5,12 +5,14 @@ from typing import Dict, List, Optional
 
 import nob
 import xmltodict
+import pandas as pd
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 from dvuploader import File, add_directory
 
 from easyDataverse.base import DataverseBase
+from easyDataverse.tabdata import TabData
 from easyDataverse.uploader import update_dataset, upload_to_dataverse
 from easyDataverse.utils import YAMLDumper
 
@@ -30,11 +32,13 @@ REQUIRED_FIELDS = [
 class Dataset(BaseModel):
     model_config = ConfigDict(
         extra="allow",
+        arbitrary_types_allowed=True,
     )
 
     metadatablocks: Dict[str, DataverseBase] = dict()
     p_id: Optional[str] = None
     files: List[File] = Field(default_factory=list)
+    tables: Dict[str, TabData] = Field(default_factory=dict)
 
     API_TOKEN: Optional[str] = Field(None)
     DATAVERSE_URL: Optional[HttpUrl] = Field(None)
@@ -99,6 +103,42 @@ class Dataset(BaseModel):
             directory=dirpath,
             directory_label=dv_dir,
             ignore=ignores,
+        )
+
+    def add_dataframe(
+        self,
+        dataframe: pd.DataFrame,
+        name: str,
+        description: str = "",
+        dv_dir: str = "",
+    ):
+        """
+        Adds a DataFrame to the dataset with the specified table name.
+
+        Args:
+            dataframe (pd.DataFrame): The DataFrame to be added.
+            name (str): The name of the table.
+            description (str, optional): Description of the table (default: "").
+            dv_dir (str, optional): Directory label for the table (default: "").
+
+        Raises:
+            ValueError: If a table with the same name already exists in the dataset.
+        """
+
+        if not isinstance(dataframe, pd.DataFrame):
+            raise TypeError(
+                f"Expected class of type 'pd.DataFrame', got '{dataframe.__class__.__name__}'"
+            )
+
+        if name in self.tables:
+            raise ValueError(f"Table with name '{name}' already exists.")
+
+        key = os.path.join(dv_dir, f"{name}.tab")
+        self.tables[key] = TabData(
+            data=dataframe,
+            name=name,
+            description=description,
+            directoryLabel=dv_dir,
         )
 
     @staticmethod
@@ -197,6 +237,7 @@ class Dataset(BaseModel):
             json_data=self.dataverse_json(),
             dataverse_name=dataverse_name,
             files=self.files,
+            tabular_data=self.tables,
             p_id=self.p_id,
             DATAVERSE_URL=str(self.DATAVERSE_URL),
             API_TOKEN=str(self.API_TOKEN),
@@ -225,6 +266,7 @@ class Dataset(BaseModel):
             files=self.files,
             DATAVERSE_URL=str(self.DATAVERSE_URL),  # type: ignore
             API_TOKEN=str(self.API_TOKEN),
+            tabular_data=self.tables,
         )
 
     # ! Validation

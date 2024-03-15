@@ -1,7 +1,8 @@
 import asyncio
 import os
 import re
-from typing import Dict, List
+import pandas as pd
+from typing import Dict, List, Union
 
 import aiofiles
 import aiohttp
@@ -9,6 +10,8 @@ import rich
 from dvuploader import File
 from pyDataverse.api import DataAccessApi
 from rich.progress import Progress, TaskID
+
+from easyDataverse.tabdata import TabData
 
 CHUNK_SIZE = 10 * 1024**2  # 10 MB
 MAXIMUM_DISPLAYED_FILES = 40
@@ -20,7 +23,8 @@ async def download_files(
     filedir: str,
     filenames: List[str],
     n_parallel_downloads: int,
-) -> List[File]:
+    tabular_to_pandas: bool,
+) -> List[Union[File, TabData]]:
     """Downloads and adds all files given in the dataset to the Dataset-Object"""
 
     files_list = _filter_files(files_list, filenames)
@@ -55,6 +59,7 @@ async def download_files(
                     progress=progress,
                     task_id=task_id,
                     over_threshold=over_threshold,
+                    tabular_to_pandas=tabular_to_pandas,
                 )
                 for file, task_id in zip(files_list, task_ids)
             ]
@@ -126,6 +131,7 @@ async def _download_file(
     progress: Progress,
     task_id: TaskID,
     over_threshold: bool,
+    tabular_to_pandas: bool,
 ):
     """
     Downloads a file from a given URL using the provided session and saves it to the specified directory.
@@ -147,6 +153,8 @@ async def _download_file(
     file_id = file["dataFile"]["id"]
     directory_label = file.get("directoryLabel", "")
     dv_path = os.path.join(directory_label, filename)
+    is_tabular = file["dataFile"]["tabularData"]
+    description = file["dataFile"].get("description", "")
 
     if filedir:
         local_path = os.path.join(filedir, dv_path)
@@ -170,6 +178,14 @@ async def _download_file(
                 if not chunk:
                     break
                 await f.write(chunk)
+
+    if is_tabular and tabular_to_pandas:
+        return TabData(
+            data=pd.read_csv(local_path, sep="\t"),
+            name=filename,
+            description=description,
+            directoryLabel=directory_label,
+        )
 
     return File(
         filepath=local_path,

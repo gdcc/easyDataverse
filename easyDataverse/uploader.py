@@ -1,21 +1,27 @@
+import os
+import tempfile
 import requests
+import pandas as pd
 
 from urllib.parse import urljoin
-from typing import List, Optional
+from typing import Dict, List, Optional
 from dvuploader import File, DVUploader
 
 from pyDataverse.api import NativeApi, DataAccessApi
 from pyDataverse.models import Dataset
 
+from easyDataverse.tabdata import TabData
+
 
 def upload_to_dataverse(
     json_data: str,
     dataverse_name: str,
+    DATAVERSE_URL: str,
+    API_TOKEN: Optional[str] = None,
     files: List[File] = [],
+    tabular_data: Dict[str, TabData] = {},
     p_id: Optional[str] = None,
     n_parallel: int = 1,
-    DATAVERSE_URL: Optional[str] = None,
-    API_TOKEN: Optional[str] = None,
 ) -> str:
     """Uploads a given Dataset to the dataverse installation found in the environment variables.
 
@@ -54,12 +60,15 @@ def upload_to_dataverse(
     # Get response data
     p_id = response.json()["data"]["persistentId"]
 
-    _uploadFiles(
-        files=files,
-        p_id=p_id,
-        api=api,
-        n_parallel=n_parallel,
-    )  # type: ignore
+    with tempfile.TemporaryDirectory() as temp_dir:
+
+        tabular_files = _write_tabular_data(tabular_data, temp_dir)
+        _uploadFiles(
+            files=files + tabular_files,
+            p_id=p_id,
+            api=api,
+            n_parallel=n_parallel,
+        )  # type: ignore
 
     print(f"{DATAVERSE_URL}/dataset.xhtml?persistentId={p_id}")
 
@@ -72,6 +81,26 @@ def _initialize_pydataverse(DATAVERSE_URL: str, API_TOKEN: str):
         NativeApi(DATAVERSE_URL, API_TOKEN),
         DataAccessApi(DATAVERSE_URL, API_TOKEN),
     )
+
+
+def _write_tabular_data(
+    tabular_data: Dict[str, TabData],
+    temp_dir: str,
+) -> List[File]:
+    """
+    Writes tabular data to temporary files and prepares them for upload.
+
+    Args:
+        tabular_data (Dict[str, TabData]): A dictionary containing tabular data
+            where the keys are the names of the tables and the values are instances
+            of the TabData class.
+        temp_dir (str): The path to the temporary directory where the files will be written.
+
+    Returns:
+        List[File]: A list of File objects representing the prepared files.
+
+    """
+    return [tab_data.prepare_upload(temp_dir) for tab_data in tabular_data.values()]
 
 
 def _uploadFiles(
@@ -103,6 +132,7 @@ def update_dataset(
     p_id: str,
     json_data: dict,
     files: List[File],
+    tabular_data: Dict[str, TabData],
     DATAVERSE_URL: Optional[str] = None,
     API_TOKEN: Optional[str] = None,
 ) -> bool:
@@ -132,10 +162,12 @@ def update_dataset(
     response.raise_for_status()
     api, _ = _initialize_pydataverse(DATAVERSE_URL, API_TOKEN)
 
-    _uploadFiles(
-        files=files,
-        p_id=p_id,
-        api=api,  # type: ignore
-    )
+    with tempfile.TemporaryDirectory() as temp_dir:
+        tabular_files = _write_tabular_data(tabular_data, temp_dir)
+        _uploadFiles(
+            files=files + tabular_files,
+            p_id=p_id,
+            api=api,  # type: ignore
+        )
 
     return True
