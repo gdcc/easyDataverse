@@ -412,8 +412,11 @@ class Dataverse(BaseModel):
             tree = metadatablock._create_tree()
             content = self._extract_data(block.fields, tree)
 
-            dataset.metadatablocks[name] = metadatablock.__class__.parse_obj(content)
-            setattr(dataset, name, dataset.metadatablocks[name])
+            if content:
+                dataset.metadatablocks[name] = metadatablock.__class__.model_validate(
+                    content
+                )
+                setattr(dataset, name, dataset.metadatablocks[name])
 
     def _fetch_dataset_version(
         self,
