@@ -150,7 +150,7 @@ class Dataset(BaseModel):
     def dataverse_json(self, indent: int = 2) -> str:
         """Returns a JSON representation of the dataverse dataset."""
 
-        return dumps(self.dataverse_dict(), indent=indent)
+        return dumps(self.dataverse_dict(), indent=indent, default=str)
 
     def dict(self, **kwargs):
         """Builds the basis of exports towards other formats."""
