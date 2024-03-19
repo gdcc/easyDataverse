@@ -1,5 +1,6 @@
 import datetime
 import json
+from pydantic_core import Url
 import rich
 import yaml
 import xmltodict
@@ -139,6 +140,8 @@ class DataverseBase(BaseModel):
                 pass
             elif isinstance(value, (datetime.date, datetime.datetime)):
                 value = value.strftime("%Y-%m-%d")
+            elif isinstance(value, Url):
+                value = str(value)
             else:
                 value = str(value)
 
