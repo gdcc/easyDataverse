@@ -48,7 +48,7 @@ dataverse = Dataverse(
   api_token="MY_API_TOKEN",
 )
 
-# Intiialize a dataset
+# Initialize a dataset
 dataset = dataverse.create_dataset()
 
 # Fill metadata blocks
