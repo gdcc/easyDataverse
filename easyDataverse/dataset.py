@@ -61,19 +61,30 @@ class Dataset(BaseModel):
         # ... and to the __dict__
         setattr(self, block_name, metadatablock)
 
-    def add_file(self, local_path: str, dv_dir: str = "", description: str = ""):
+    def add_file(
+        self,
+        local_path: str,
+        dv_dir: str = "",
+        categories: List[str] = ["DATA"],
+        description: str = "",
+    ):
         """Adds a file to the dataset based on the provided path.
 
         Args:
             local_path (str): Path to the file.
             dv_dir (str, optional): Directory in which the file should be stored in Dataverse. Defaults to "".
+            categories (List[str], optional): List of categories to assign to the file. Defaults to ["DATA"].
             description (str, optional): Description of the file. Defaults to "".
+
+        Raises:
+            FileExistsError: If the file has already been added to the dataset.
         """
 
         file = File(
             filepath=local_path,
             directoryLabel=dv_dir,
             description=description,
+            categories=categories,
         )
 
         if file not in self.files:
@@ -188,9 +199,10 @@ class Dataset(BaseModel):
 
         Args:
             dataverse_name (str): Name of the target dataverse.
-            filenames (List[str], optional): File or directory names which will be uploaded. Defaults to None.
+            n_parallel (int, optional): Number of parallel uploads to perform. Defaults to 1.
+
         Returns:
-            str: [description]
+            str: The identifier of the uploaded dataset.
         """
         self._validate_required_fields()
         self.p_id = upload_to_dataverse(
