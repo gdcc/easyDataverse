@@ -1,4 +1,7 @@
-from easyDataverse.core import Dataset
-from easyDataverse.tools import ProgrammingLanguage
+from .dataset import Dataset
+from .dataverse import Dataverse
+import nest_asyncio
 
-__version__ = "0.3.10"
+nest_asyncio.apply()
+
+__version__ = "0.4.0"

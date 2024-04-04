@@ -1,9 +1,0 @@
-easyDataverse
-fastapi
-uvicorn
-pydantic
-jinja2
-pyDataverse
-pandas
-pyaml
-typer

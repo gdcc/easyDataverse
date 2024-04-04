@@ -1,74 +1,28 @@
 import pytest
-
-from easyDataverse import Dataset
-from easyDataverse.core.base import DataverseBase
-
-from tests.fixtures.dataset.toydataset import ToyDataset, SomeEnum
-from tests.fixtures.dataset.invalidclass import InvalidBlock, AnotherEnum
+import os
+import json
 
 
-@pytest.fixture
-def metadatablock():
-    """Simple artificial metadatablock."""
+@pytest.fixture()
+def credentials():
+    """
+    Retrieves the base URL and API token from the environment variables.
 
-    block = ToyDataset(foo="foo", some_enum=SomeEnum.enum)
-    block.add_compound("bar")
-
-    return block
-
-
-@pytest.fixture
-def toy_dataset():
-    """Simple artificial metadatablock."""
-
-    # Set up the metadatablock
-    block = ToyDataset(foo="foo", some_enum=SomeEnum.enum)
-    block.add_compound("bar")
-
-    # Add to dataset
-    dataset = Dataset()
-    dataset.add_metadatablock(block)
-
-    return dataset
+    Returns:
+        tuple: A tuple containing the base URL and API token.
+    """
+    return (
+        os.environ.get("BASE_URL").rstrip("/"),
+        os.environ.get("API_TOKEN"),
+    )
 
 
-@pytest.fixture
-def invalid_block():
-    """Simple artificial class that looks similar to a valid block, but has invalid parent"""
+@pytest.fixture()
+def minimal_upload():
+    """
+    Returns the contents of the 'minimal_upload.json' file as a dictionary.
 
-    block = InvalidBlock(foo="foo", some_enum=AnotherEnum.enum_field)
-    block.add_compound("bar")
-
-    return block
-
-
-@pytest.fixture
-def dataverse_json():
-    """Expected JSON output when passed to pyDataverse"""
-
-    return open("./tests/fixtures/dataset/dataverse_json_output.json").read()
-
-
-@pytest.fixture
-def yaml_input():
-    """YAML file used to initialize a dataset"""
-
-    return open("./tests/fixtures/yaml_output.yaml").read()
-
-
-@pytest.fixture
-def dataverse_base_class():
-    """Sets up a dummy class to test the base class"""
-
-    class Test(DataverseBase):
-        foo: str
-        bar: str
-
-    return Test
-
-
-@pytest.fixture
-def metadatablock_json_schema():
-    """Sets up a metadatablock json schema"""
-
-    return open("./tests/fixtures/dataversebase/toydataset.schema.json").read()
+    Returns:
+        dict: The contents of the 'minimal_upload.json' file.
+    """
+    return json.load(open("tests/fixtures/minimal_upload.json"))
