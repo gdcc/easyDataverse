@@ -163,7 +163,7 @@ class Dataset(BaseModel):
 
         return dumps(self.dataverse_dict(), indent=indent, default=str)
 
-    def dict(self, **kwargs):
+    def dict(self, exclude_none: bool = True, **kwargs):
         """Builds the basis of exports towards other formats."""
 
         data = {"metadatablocks": {}}
@@ -172,17 +172,20 @@ class Dataset(BaseModel):
             data["dataset_id"] = self.p_id  # type: ignore
 
         for name, block in self.metadatablocks.items():
-            block = block.dict(exclude_none=True)
+            block = block.dict(exclude_none=exclude_none)
 
             if block != {}:
                 data["metadatablocks"][name] = block
 
         return data
 
-    def yaml(self) -> str:
+    def yaml(self, exclude_none: bool = True) -> str:
         """Exports the dataset as a YAML file that can also be read by the API"""
         return yaml.dump(
-            self.dict(), Dumper=YAMLDumper, default_flow_style=False, sort_keys=False
+            self.dict(exclude_none=exclude_none),
+            Dumper=YAMLDumper,
+            default_flow_style=False,
+            sort_keys=False,
         )
 
     def json(self) -> str:
