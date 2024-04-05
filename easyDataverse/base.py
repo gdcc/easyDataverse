@@ -1,5 +1,6 @@
 import datetime
 import json
+import os
 from pydantic_core import Url
 import rich
 import yaml
@@ -8,7 +9,9 @@ import xmltodict
 from anytree import Node, RenderTree, ContRoundStyle
 from enum import Enum
 from pydantic import BaseModel, ConfigDict
-from typing import Dict, Optional, get_args
+from typing import Dict, Optional, get_args, get_origin
+
+from easyDataverse.utils import YAMLDumper
 
 
 class DataverseBase(BaseModel):
@@ -64,14 +67,12 @@ class DataverseBase(BaseModel):
             default=str,
         )
 
-    def yaml(self):
+    def yaml(self, exclude_none: bool = True, **kwargs) -> str:
         """Returns a YAML representation of the dataverse object"""
 
-        yaml_obj = self.dict(exclude_none=True)
+        yaml_obj = self.dict(exclude_none=exclude_none, **kwargs)
 
-        return yaml.safe_dump(
-            yaml_obj,
-        )
+        return yaml.safe_dump(yaml_obj)
 
     def dict(self, **dictkwargs) -> Dict:
         """Returns a dictionary representation of the dataverse object."""
@@ -264,3 +265,73 @@ class DataverseBase(BaseModel):
                 node.parent = function_root
 
         return root
+
+    # ! Template exporter
+    @classmethod
+    def export_template(
+        cls,
+        path: str,
+        format: str = "json",
+    ):
+        assert format in ["json", "yaml"], "Format must be either 'json' or 'yaml'"
+
+        example = cls._construct_example_ds(cls)
+
+        if format == "json":
+            fpath = os.path.join(path, f"{cls.__name__.lower()}_template.json")
+            with open(fpath, "w") as f:
+                json.dump(example, f, indent=2)
+        elif format == "yaml":
+            fpath = os.path.join(path, f"{cls.__name__}_template.yaml")
+            with open(fpath, "w") as f:
+                yaml.dump(
+                    data=example,
+                    stream=f,
+                    Dumper=YAMLDumper,
+                    default_flow_style=False,
+                    sort_keys=False,
+                )
+
+        rich.print(f"💽 [bold]Template exported to [green]{fpath}[/green][/bold]")
+
+    @classmethod
+    def _construct_example_ds(cls, block):
+        """
+        Constructs an example data structure based on the given block.
+
+        Args:
+            block (DataverseBase): The block object to construct the example data structure from.
+
+        Returns:
+            dict: The example data structure.
+
+        """
+
+        example_ds = {}
+
+        for field in block.model_fields.values():
+            annot = field.annotation
+            dtype = [t for t in get_args(annot) if t != type(None)][0]
+            alias = field.alias
+
+            is_multiple = get_origin(annot) == list
+            is_complex = hasattr(dtype, "model_fields")
+
+            if dtype.__name__ == "Annotated":
+                dtype_name = "URL"
+            else:
+                dtype_name = dtype.__name__
+
+            if is_complex:
+                sub_example = cls._construct_example_ds(dtype)
+                if is_multiple:
+                    example_ds[alias] = [sub_example]
+                else:
+                    example_ds[alias] = sub_example
+            else:
+                if is_multiple:
+                    example_ds[alias] = [f"Enter data of type {dtype_name}"]
+                else:
+                    example_ds[alias] = f"Enter data of type {dtype_name}"
+
+        return example_ds
