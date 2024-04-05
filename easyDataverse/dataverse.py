@@ -180,7 +180,7 @@ class Dataverse(BaseModel):
 
         if response.status_code != 200:
             raise ValueError(
-                f"URL '{self.server_url}' is not a valid Dataverse installation. Couldnt find version info."
+                f"URL '{self.server_url}' is not a valid Dataverse installation. Couldn't find version info."
             )
 
         major, minor, *_ = response.json()["data"]["version"].split(".")

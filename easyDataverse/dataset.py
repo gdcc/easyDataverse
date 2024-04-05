@@ -224,7 +224,7 @@ class Dataset(BaseModel):
         """Updates a given dataset if a p_id has been given.
 
         Use this function in conjunction with 'from_dataverse_doi' to edit and update datasets.
-        Due to the Dataverse REST API, downloaded datasets wont include contact mails, but in
+        Due to the Dataverse REST API, downloaded datasets won't include contact mails, but in
         order to update the dataset it is required. For this, provide a name and mail for contact.
         EasyDataverse will search existing contacts and when a name fits, it will add the mail.
         Otherwise a new contact is added to the dataset.

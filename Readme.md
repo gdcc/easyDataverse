@@ -7,7 +7,7 @@
 </h1>
 
 <p align="center">
-EasyDataverse is a Python libary used to interface Dataverse installations and dynamically generate Python objects compatible to a metadatablock configuration given at a Dataverse installation. In addtion, EasyDataverse allows you to export and import datasets to and from various data formats.</p>
+EasyDataverse is a Python library used to interface Dataverse installations and dynamically generate Python objects compatible to a metadatablock configuration given at a Dataverse installation. In addition, EasyDataverse allows you to export and import datasets to and from various data formats.</p>
 
 ### Features
 
