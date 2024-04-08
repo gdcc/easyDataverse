@@ -22,15 +22,13 @@ Get started with EasyDataverse by running the following command
 
 ```bash
 # Using PyPI
-python -m pip install easyDataverse
+pip install easyDataverse
 ```
 
 Or build by source
 
 ```bash
-git clone https://github.com/gdcc/easyDataverse.git
-cd easyDataverse
-python setup.py install
+pip install git+https://github.com/gdcc/easyDataverse.git
 ```
 
 ## ⚙️ Quickstart
