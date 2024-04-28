@@ -194,7 +194,7 @@ class DataverseBase(BaseModel):
             if self._is_compound(field) and self._is_multiple(field):
                 value = self._process_multiple_compound(getattr(self, name))
             elif self._is_compound(field):
-                value = getattr(self, name).extract_changed()
+                value = self._process_single_compound(getattr(self, name))
             else:
                 value = getattr(self, name)
 
@@ -226,11 +226,13 @@ class DataverseBase(BaseModel):
 
         return [compound.dataverse_dict() for compound in compounds]
 
-    @staticmethod
-    def _change_to_dict(compound: List[Dict]) -> Dict[str, Dict]:
-        """Converts a list of changed compounds to a dictionary"""
+    def _process_single_compound(self, compound) -> Dict:
+        """Processes a single compound"""
 
-        return {field["typeName"]: field for field in compound}
+        if not compound._changed:
+            return {}
+
+        return compound.dataverse_dict()
 
     def _is_compound(self, field_info: FieldInfo):
         """Checks whether a field is a compound"""
