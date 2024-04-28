@@ -1,6 +1,8 @@
 import datetime
 import json
 import os
+from pydantic.fields import FieldInfo
+from typing_extensions import Set
 from pydantic_core import Url
 import rich
 import yaml
@@ -8,8 +10,8 @@ import xmltodict
 
 from anytree import Node, RenderTree, ContRoundStyle
 from enum import Enum
-from pydantic import BaseModel, ConfigDict
-from typing import Dict, Optional, get_args, get_origin
+from pydantic import BaseModel, ConfigDict, PrivateAttr
+from typing import Any, Dict, List, Optional, get_args, get_origin
 
 from easyDataverse.utils import YAMLDumper
 
@@ -21,6 +23,15 @@ class DataverseBase(BaseModel):
         use_enum_values=True,
         populate_by_name=True,
     )
+
+    _changed: Set = PrivateAttr(default_factory=set)
+
+    # ! Overloads
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name in self.model_fields:
+            self._changed.add(name)
+
+        return super().__setattr__(name, value)
 
     @classmethod
     def from_json_string(cls, json_string: str):
@@ -169,6 +180,77 @@ class DataverseBase(BaseModel):
     def to_dataverse_json(self, indent: int = 2) -> str:
         """Returns a JSON formatted representation of the dataverse object."""
         return json.dumps(self.dataverse_dict(), indent=indent)
+
+    def extract_changed(self) -> List[Dict]:
+        """Extracts the changed fields from the object"""
+
+        self._add_changed_multiples()
+
+        changed_fields = []
+
+        for name in self._changed:
+            field = self.model_fields[name]
+
+            if self._is_compound(field) and self._is_multiple(field):
+                value = self._process_multiple_compound(getattr(self, name))
+            elif self._is_compound(field):
+                value = getattr(self, name).extract_changed()
+            else:
+                value = getattr(self, name)
+
+            if value:
+                changed_fields.append(self._wrap_changed(field, value))
+
+        return changed_fields
+
+    def _add_changed_multiples(self):
+        """Checks whether a compound has multiple changed fields"""
+
+        for name, field in self.model_fields.items():
+            if not self._is_compound(field):
+                continue
+            if not self._is_multiple(field):
+                continue
+
+            value = getattr(self, name)
+            has_changes = any(value._changed for value in value)
+
+            if has_changes:
+                self._changed.add(name)
+
+    def _process_multiple_compound(self, compounds) -> List[Dict]:
+        """Whenever a single compound has changed, return all compounds."""
+
+        if not any(len(compound._changed) for compound in compounds):
+            return []
+
+        return [compound.dataverse_dict() for compound in compounds]
+
+    @staticmethod
+    def _change_to_dict(compound: List[Dict]) -> Dict[str, Dict]:
+        """Converts a list of changed compounds to a dictionary"""
+
+        return {field["typeName"]: field for field in compound}
+
+    def _is_compound(self, field_info: FieldInfo):
+        """Checks whether a field is a compound"""
+
+        return field_info.json_schema_extra["typeClass"] == "compound"  # type: ignore
+
+    def _is_multiple(self, field):
+        """Checks whether a field is multiple"""
+
+        return field.json_schema_extra["multiple"]
+
+    def _wrap_changed(self, field: FieldInfo, value: Any):
+        """Wraps the changed field with type name"""
+
+        assert "typeName" in field.json_schema_extra  # type: ignore
+
+        return {
+            "typeName": field.json_schema_extra["typeName"],  # type: ignore
+            "value": value,
+        }
 
     @staticmethod
     def is_empty(value):
