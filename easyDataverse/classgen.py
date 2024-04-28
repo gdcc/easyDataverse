@@ -363,6 +363,9 @@ def union_type(dtypes: Tuple):
         Union: A Union typing encapsulating the given types
     """
 
+    if not isinstance(dtypes, tuple):
+        raise TypeError(f"Expected a tuple of types, got {type(dtypes)}")
+
     if len(dtypes) < 2:
         raise ValueError(f"Union type requires more than a single type")
 
