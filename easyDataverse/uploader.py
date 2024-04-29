@@ -22,8 +22,8 @@ def upload_to_dataverse(
     Args:
         json_data (str): JSON representation of the Dataverse dataset.
         dataverse_name (str): Name of the Dataverse where the data will be uploaded to.
-        files (List[str], optional): List of files that should be uploaded. Can also include durectory names. Defaults to None.
-        p_id (Optional[str], optional): Persitent Identifier of the dataset. Defaults to None.
+        files (List[str], optional): List of files that should be uploaded. Can also include directory names. Defaults to None.
+        p_id (Optional[str], optional): Persistent Identifier of the dataset. Defaults to None.
 
 
     Raises:

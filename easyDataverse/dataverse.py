@@ -83,7 +83,7 @@ class Dataverse(BaseModel):
         be accessed the same way as other fields (its just nested)
         or in the case of "multiple" be added via dedicated add-methods.
 
-        dataset.citation.description(text="Description") -> Adds a decription
+        dataset.citation.description(text="Description") -> Adds a description
 
         Args:
             url (AnyHttpUrl): URL to the Dataverse installation
@@ -180,7 +180,7 @@ class Dataverse(BaseModel):
 
         if response.status_code != 200:
             raise ValueError(
-                f"URL '{self.server_url}' is not a valid Dataverse installation. Couldnt find version info."
+                f"URL '{self.server_url}' is not a valid Dataverse installation. Couldn't find version info."
             )
 
         major, minor, *_ = response.json()["data"]["version"].split(".")

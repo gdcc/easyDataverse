@@ -142,7 +142,7 @@ async def _download_file(
         File: The downloaded file object with the file path, file ID, and other metadata.
     """
 
-    # Get file metdata
+    # Get file metadata
     filename = file["dataFile"]["filename"]
     file_id = file["dataFile"]["id"]
     directory_label = file.get("directoryLabel", "")
