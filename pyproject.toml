@@ -2,7 +2,7 @@
 name = "easyDataverse"
 version = "0.4.0"
 description = "Lightweight Dataverse interface in Python to upload, download and update datasets found in Dataverse instances."
-authors = ["Jan Range <range.jan@web.de>"]
+authors = ["Jan Range <jan.range@simtech.uni-stuttgart.de>"]
 license = "MIT License"
 readme = "Readme.md"
 packages = [{ include = "easyDataverse" }]
