@@ -65,6 +65,7 @@ class Dataset(BaseModel):
         self,
         local_path: str,
         dv_dir: str = "",
+        file_name: Optional[str] = None,
         categories: List[str] = ["DATA"],
         description: str = "",
     ):
@@ -73,6 +74,7 @@ class Dataset(BaseModel):
         Args:
             local_path (str): Path to the file.
             dv_dir (str, optional): Directory in which the file should be stored in Dataverse. Defaults to "".
+            file_name (str, optional): Name of the file in Dataverse. Defaults to None, which will use the basename of local_path.
             categories (List[str], optional): List of categories to assign to the file. Defaults to ["DATA"].
             description (str, optional): Description of the file. Defaults to "".
 
@@ -85,6 +87,7 @@ class Dataset(BaseModel):
             directoryLabel=dv_dir,
             description=description,
             categories=categories,
+            file_name=file_name,  # type: ignore
         )
 
         if file not in self.files:
