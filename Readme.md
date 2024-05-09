@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="https://github.com/gdcc/easyDataverse/blob/main/static/logo.png" width=300 alt="EasyDataverse"></br>
+  <img src="https://raw.githubusercontent.com/gdcc/easyDataverse/main/static/logo.png" width=300 alt="EasyDataverse"></br>
   <img src="https://img.shields.io/badge/EasyDataverse-0.4.0-blue" alt="v0.4.0">
   <img src="https://img.shields.io/badge/python-3.8|3.9|3.10|3.11-blue.svg" alt="Build Badge">
   <img src="https://github.com/gdcc/easyDataverse/actions/workflows/unit-tests.yaml/badge.svg" alt="Build Badge">
