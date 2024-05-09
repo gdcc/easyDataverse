@@ -1,7 +1,5 @@
-import json
 import requests
 
-from urllib.parse import urljoin
 from typing import Dict, List, Optional
 from dvuploader import File, DVUploader
 
