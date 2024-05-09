@@ -440,7 +440,7 @@ class TestCreateFunctionSignature:
         assert result[1].default.__name__ == "empty"
         assert result[2].name == "optional"
         assert result[2].type == Optional[str]
-        assert result[2].default == None
+        assert result[2].default is None
 
 
 class TestGenerateAddFuntion:
@@ -539,17 +539,19 @@ class TestPrepareFieldMeta:
 
         # Assert
         expected = Field(
-            multiple=False,
-            typeClass="primitive",
-            typeName="single_text_field",
-            description="A single text field",
             default=None,
+            description="A single text field",
+            json_schema_extra=dict(
+                multiple=False,
+                typeClass="primitive",
+                typeName="single_text_field",
+            ),
         )
 
         assert result.json_schema_extra == expected.json_schema_extra
         assert result.default == expected.default
         assert result.annotation == expected.annotation
-        assert result.is_required() == False
+        assert not result.is_required()
 
     @pytest.mark.unit
     def test_multiple_primitive_field(self):
@@ -567,17 +569,19 @@ class TestPrepareFieldMeta:
 
         # Assert
         expected = Field(
-            multiple=True,
-            typeClass="primitive",
-            typeName="multiple_text_field",
             description="A multiple text field",
             default_factory=list,
+            json_schema_extra=dict(
+                multiple=True,
+                typeClass="primitive",
+                typeName="multiple_text_field",
+            ),
         )
 
         assert result.json_schema_extra == expected.json_schema_extra
         assert result.default_factory == expected.default_factory
         assert result.annotation == expected.annotation
-        assert result.is_required() == False
+        assert not result.is_required()
 
     @pytest.mark.unit
     def test_compound_field(self):
@@ -595,17 +599,19 @@ class TestPrepareFieldMeta:
 
         # Assert
         expected = Field(
-            multiple=False,
-            typeClass="compound",
-            typeName="single_compound_field",
             description="A single compound field",
             default=None,
+            json_schema_extra=dict(
+                multiple=False,
+                typeClass="compound",
+                typeName="single_compound_field",
+            ),
         )
 
         assert result.json_schema_extra == expected.json_schema_extra
         assert result.default_factory == expected.default_factory
         assert result.annotation == expected.annotation
-        assert result.is_required() == False
+        assert not result.is_required()
 
     @pytest.mark.unit
     def test_controlled_vocab_field(self):
@@ -623,17 +629,19 @@ class TestPrepareFieldMeta:
 
         # Assert
         expected = Field(
-            multiple=False,
-            typeClass="controlledVocabulary",
-            typeName="single_cv_field",
             description="A single CV field",
             default=None,
+            json_schema_extra=dict(
+                multiple=False,
+                typeClass="controlledVocabulary",
+                typeName="single_cv_field",
+            ),
         )
 
         assert result.json_schema_extra == expected.json_schema_extra
         assert result.default_factory == expected.default_factory
         assert result.annotation == expected.annotation
-        assert result.is_required() == False
+        assert not result.is_required()
 
 
 class TestGetFieldType:
