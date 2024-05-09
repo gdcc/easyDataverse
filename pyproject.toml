@@ -4,7 +4,7 @@ version = "0.4.0"
 description = "Lightweight Dataverse interface in Python to upload, download and update datasets found in Dataverse installations."
 authors = ["Jan Range <range.jan@web.de>"]
 license = "MIT License"
-readme = "README.md"
+readme = "Readme.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
