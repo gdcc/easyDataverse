@@ -86,7 +86,7 @@ dataset, dataverse = Dataverse.from_ds_url(
 )
 
 # Display the content of the dataset
-print(dataset) 
+print(dataset)
 
 # Update metadata
 dataset.citation.title = "My even nicer dataset"
@@ -105,4 +105,4 @@ dataset.update()
 
 ## ⚠️ License
 
-`EasyDataverse` is free and open-source software licensed under the [MIT License]().
+`EasyDataverse` is free and open-source software licensed under the [MIT License](LICENSE).
