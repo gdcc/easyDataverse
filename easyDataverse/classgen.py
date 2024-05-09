@@ -9,7 +9,6 @@ from pydantic.fields import FieldInfo
 from typing import List, Tuple, Union, Type, Optional, Dict, Callable
 
 from easyDataverse.base import DataverseBase
-import re
 
 TYPE_MAPPING = {
     "text": str,
@@ -367,7 +366,7 @@ def union_type(dtypes: Tuple):
         raise TypeError(f"Expected a tuple of types, got {type(dtypes)}")
 
     if len(dtypes) < 2:
-        raise ValueError(f"Union type requires more than a single type")
+        raise ValueError("Union type requires more than a single type")
 
     return Union[dtypes]  # type: ignore
 

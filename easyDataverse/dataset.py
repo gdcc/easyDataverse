@@ -93,7 +93,7 @@ class Dataset(BaseModel):
         if file not in self.files:
             self.files.append(file)
         else:
-            raise FileExistsError(f"File has already been added to the dataset")
+            raise FileExistsError("File has already been added to the dataset")
 
     def add_directory(
         self,
