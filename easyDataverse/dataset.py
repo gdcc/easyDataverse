@@ -207,7 +207,9 @@ class Dataset(BaseModel):
         Returns:
             str: The identifier of the uploaded dataset.
         """
+
         self._validate_required_fields()
+
         self.p_id = upload_to_dataverse(
             json_data=self.dataverse_json(),
             dataverse_name=dataverse_name,
@@ -221,26 +223,30 @@ class Dataset(BaseModel):
         return self.p_id
 
     def update(self):
-        """Updates a given dataset if a p_id has been given.
+        """Updates a dataset if a p_id has been given.
 
-        Use this function in conjunction with 'from_dataverse_doi' to edit and update datasets.
-        Due to the Dataverse REST API, downloaded datasets won't include contact mails, but in
-        order to update the dataset it is required. For this, provide a name and mail for contact.
-        EasyDataverse will search existing contacts and when a name fits, it will add the mail.
-        Otherwise a new contact is added to the dataset.
-
-        Args:
-            contact_name (str, optional): Name of the contact. Defaults to None.
-            contact_mail (str, optional): Mail of the contact. Defaults to None.
+        Use this function to update a dataset that has already been uploaded to Dataverse.
         """
-        self._validate_required_fields()
+
+        if not self.p_id:
+            raise ValueError("No dataset identifier has been given.")
+
         update_dataset(
-            json_data=self.dataverse_dict()["datasetVersion"],
+            to_change=self._extract_changes(),
             p_id=self.p_id,  # type: ignore
             files=self.files,
             DATAVERSE_URL=str(self.DATAVERSE_URL),  # type: ignore
             API_TOKEN=str(self.API_TOKEN),
         )
+
+    def _extract_changes(self) -> Dict:
+        """Extracts the changes that have been made to the dataset."""
+
+        changes = []
+        for block in self.metadatablocks.values():
+            changes += block.extract_changed()
+
+        return {"fields": changes}
 
     # ! Validation
     def _validate_required_fields(self):
