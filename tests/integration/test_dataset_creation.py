@@ -1,4 +1,3 @@
-
 import pytest
 from easyDataverse.dataset import Dataset
 
@@ -31,6 +30,11 @@ class TestDatasetCreation:
         dataset.citation.add_dataset_contact(
             name="John Doe",
             email="john@doe.com",
+        )
+
+        dataset.add_directory(
+            dirpath="./tests/fixtures",
+            dv_dir="some/sub/dir",
         )
 
         assert self.sort_citation(dataset) == minimal_upload

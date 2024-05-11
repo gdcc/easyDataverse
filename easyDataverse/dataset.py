@@ -111,7 +111,7 @@ class Dataset(BaseModel):
 
         self.files += add_directory(
             directory=dirpath,
-            directory_label=dv_dir,
+            rootDirectoryLabel=dv_dir,
             ignore=ignores,
         )
 
