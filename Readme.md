@@ -95,7 +95,7 @@ dataset.update()
 
 ## 📖 Documentation and more examples
 
-🚧 Under construction 🚧
+You can find a thorough [example notebook](examples/EasyDataverseBasics.ipynb) in the [examples](examples) directory. This notebook demonstrate basic concepts of EasyDataverse and how to use it in practice.
 
 ## ✍️ Authors
 
