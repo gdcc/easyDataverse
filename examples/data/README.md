@@ -1,8 +1,6 @@
-This directory includes a few sample datasets to get you started.
+> The data has been taken from the default Colab instance.
 
-*   `california_housing_data*.csv` is California housing data from the 1990 US
-    Census; more information is available at:
-    https://developers.google.com/machine-learning/crash-course/california-housing-data-description
+This directory includes a few sample datasets to get you started.
 
 *   `mnist_*.csv` is a small sample of the
     [MNIST database](https://en.wikipedia.org/wiki/MNIST_database), which is
