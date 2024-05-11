@@ -4,4 +4,4 @@ import nest_asyncio
 
 nest_asyncio.apply()
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
