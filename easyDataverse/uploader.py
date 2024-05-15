@@ -1,5 +1,8 @@
+from urllib.parse import urljoin
 import requests
 
+from rich.panel import Panel
+from rich.console import Console
 from typing import Dict, List, Optional
 from dvuploader import File, DVUploader
 
@@ -59,6 +62,19 @@ def upload_to_dataverse(
         api=api,
         n_parallel=n_parallel,
     )  # type: ignore
+
+    console = Console()
+    url = urljoin(DATAVERSE_URL, f"dataset.xhtml?persistentId={p_id}")
+    panel = Panel(
+        f"🎉 {url}",
+        title="Dataset URL",
+        border_style="green",
+        title_align="left",
+        padding=(1, 2),
+    )
+
+    print("\n")
+    console.print(panel)
 
     return p_id  # type: ignore
 
