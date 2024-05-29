@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 import forge
 import types
 import re
@@ -17,7 +17,7 @@ TYPE_MAPPING = {
     "integer": int,
     "int": int,
     "textbox": str,
-    "date": date,
+    "date": str,
     "email": EmailStr,
 }
 
