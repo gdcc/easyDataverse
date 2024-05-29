@@ -212,18 +212,10 @@ class DataverseBase(BaseModel):
             if not self._is_multiple(field):
                 continue
 
-            value = getattr(self, name)
-            has_changes = any(value._changed for value in value)
-
-            if has_changes:
-                self._changed.add(name)
+            self._changed.add(name)
 
     def _process_multiple_compound(self, compounds) -> List[Dict]:
-        """Whenever a single compound has changed, return all compounds."""
-
-        if not any(len(compound._changed) for compound in compounds):
-            return []
-
+        """Processes multiple compounds"""
         return [compound.dataverse_dict() for compound in compounds]
 
     def _process_single_compound(self, compound) -> Dict:

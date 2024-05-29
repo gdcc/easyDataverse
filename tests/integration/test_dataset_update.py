@@ -13,7 +13,6 @@ class TestDatasetUpdate:
         credentials,
         minimal_upload,
     ):
-
         # Arrange
         base_url, api_token = credentials
         url = f"{base_url}/api/dataverses/root/datasets"
@@ -38,6 +37,11 @@ class TestDatasetUpdate:
         # Fetch the dataset and update the title
         dataset = dataverse.load_dataset(pid)
         dataset.citation.title = "Title has changed"
+
+        # Check if multiple compound changes are tracked too
+        dataset.citation.add_other_id(agency="Software Heritage1", value="softwareid1")
+        dataset.citation.add_other_id(agency="Software Heritage2", value="softwareid2")
+
         dataset.update()
 
         # Re-fetch the dataset
@@ -59,10 +63,32 @@ class TestDatasetUpdate:
             )
         )
 
+        other_id_fields = next(
+            filter(
+                lambda x: x["typeName"] == "otherId",
+                updated_dataset["data"]["metadataBlocks"]["citation"]["fields"],
+            )
+        )["value"]
+
         # Assert
         assert (
             title_field["value"] == "Title has changed"
         ), "The updated dataset title does not match the expected title."
+        assert (
+            len(other_id_fields) == 2
+        ), "The updated dataset does not have the expected number of other ids."
+        assert (
+            other_id_fields[0]["otherIdValue"]["value"] == "softwareid1"
+        ), "The updated dataset does not have the expected other id."
+        assert (
+            other_id_fields[1]["otherIdValue"]["value"] == "softwareid2"
+        ), "The updated dataset does not have the expected other id."
+        assert (
+            other_id_fields[0]["otherIdAgency"]["value"] == "Software Heritage1"
+        ), "The updated dataset does not have the expected other id agency."
+        assert (
+            other_id_fields[1]["otherIdAgency"]["value"] == "Software Heritage2"
+        ), "The updated dataset does not have the expected other id agency."
 
     @staticmethod
     def sort_citation(dataset: Dict):
