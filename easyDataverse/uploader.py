@@ -116,6 +116,7 @@ def update_dataset(
     p_id: str,
     to_change: Dict,
     files: List[File],
+    replace: bool,
     DATAVERSE_URL: Optional[str] = None,
     API_TOKEN: Optional[str] = None,
 ) -> bool:
@@ -125,6 +126,7 @@ def update_dataset(
         p_id (str): Persistent ID of the dataset.
         to_change (Dict): Dictionary of fields to change.
         files (List[File]): List of files that should be uploaded. Can also include directory names.
+        replace (bool, optional): Whether to replace the existing files. Defaults to False.
         DATAVERSE_URL (Optional[str], optional): The URL of the Dataverse instance. Defaults to None.
         API_TOKEN (Optional[str], optional): The API token for authentication. Defaults to None.
 
@@ -137,6 +139,7 @@ def update_dataset(
     _update_metadata(
         p_id=p_id,
         to_change=to_change,
+        replace=replace,
         base_url=DATAVERSE_URL,  # type: ignore
         api_token=API_TOKEN,  # type: ignore
     )
@@ -155,6 +158,7 @@ def _update_metadata(
     to_change: Dict,
     base_url: str,
     api_token: str,
+    replace: bool,
 ):
     """Updates the metadata of a dataset.
 
@@ -167,9 +171,14 @@ def _update_metadata(
     Raises:
         requests.HTTPError: If the request fails.
     """
-    EDIT_ENDPOINT = f"{base_url.rstrip('/')}/api/datasets/:persistentId/editMetadata?persistentId={p_id}&replace=true"
-    headers = {"X-Dataverse-key": api_token}
 
+    if replace:
+        EDIT_ENDPOINT = f"{base_url.rstrip('/')}/api/datasets/:persistentId/editMetadata?persistentId={p_id}&replace=true"
+    else:
+        EDIT_ENDPOINT = f"{base_url.rstrip('/')}/api/datasets/:persistentId/editMetadata?persistentId={p_id}"
+
+    headers = {"X-Dataverse-key": api_token}
     response = requests.put(EDIT_ENDPOINT, headers=headers, json=to_change)
 
-    response.raise_for_status()
+    if response.status_code != 200:
+        raise requests.HTTPError(f"Failed to update metadata: {response.text}")
