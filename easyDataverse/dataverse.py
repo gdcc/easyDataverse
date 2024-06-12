@@ -339,6 +339,10 @@ class Dataverse(BaseModel):
                 n_parallel_downloads=n_parallel_downloads,
             )
 
+        # Set "new" prop to False
+        for metadatablock in dataset.metadatablocks.values():
+            metadatablock._set_new_prop(False)
+
         return dataset
 
     def _fetch_dataset(

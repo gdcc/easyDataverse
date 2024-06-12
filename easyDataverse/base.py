@@ -25,6 +25,7 @@ class DataverseBase(BaseModel):
     )
 
     _changed: Set = PrivateAttr(default_factory=set)
+    _new: bool = PrivateAttr(default=True)
 
     # ! Overloads
     def __setattr__(self, name: str, value: Any) -> None:
@@ -184,9 +185,9 @@ class DataverseBase(BaseModel):
     def extract_changed(self) -> List[Dict]:
         """Extracts the changed fields from the object"""
 
-        self._add_changed_multiples()
-
         changed_fields = []
+
+        self._add_changed_multiples()
 
         for name in self._changed:
             field = self.model_fields[name]
@@ -212,10 +213,17 @@ class DataverseBase(BaseModel):
             if not self._is_multiple(field):
                 continue
 
-            self._changed.add(name)
+            has_changed = any(
+                compound._changed or compound._new
+                for compound in getattr(self, name)
+            )
+
+            if has_changed:
+                self._changed.add(name)
 
     def _process_multiple_compound(self, compounds) -> List[Dict]:
         """Processes multiple compounds"""
+
         return [compound.dataverse_dict() for compound in compounds]
 
     def _process_single_compound(self, compound) -> Dict:
@@ -245,6 +253,21 @@ class DataverseBase(BaseModel):
             "typeName": field.json_schema_extra["typeName"],  # type: ignore
             "value": value,
         }
+
+    def _set_new_prop(self, value: bool):
+        """Sets the new property of the object"""
+
+        self._new = value
+
+        for attr, field in self.model_fields.items():
+            if not field.json_schema_extra["typeClass"] == "compound":
+                continue
+
+            if field.json_schema_extra["multiple"]:
+                for compound in getattr(self, attr):
+                    compound._set_new_prop(value)
+            else:
+                getattr(self, attr)._set_new_prop(value)
 
     @staticmethod
     def is_empty(value):
