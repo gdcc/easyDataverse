@@ -2,7 +2,6 @@ from typing import Dict
 
 import pytest
 import requests
-from requests.models import HTTPError
 
 from easyDataverse import Dataverse
 
