@@ -175,7 +175,7 @@ def _update_metadata(
     if replace:
         EDIT_ENDPOINT = f"{base_url.rstrip('/')}/api/datasets/:persistentId/editMetadata?persistentId={p_id}&replace=true"
     else:
-        EDIT_ENDPOINT = f"{base_url.rstrip('/')}/api/datasets/:persistentId/editMetadata?persistentId={p_id}"
+        EDIT_ENDPOINT = f"{base_url.rstrip('/')}/api/datasets/:persistentId/editMetadata?persistentId={p_id}&replace=false"
 
     headers = {"X-Dataverse-key": api_token}
     response = requests.put(EDIT_ENDPOINT, headers=headers, json=to_change)
