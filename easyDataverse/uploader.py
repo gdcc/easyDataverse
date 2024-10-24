@@ -34,7 +34,9 @@ def upload_to_dataverse(
         str: The resulting DOI of the dataset, if successful.
     """
 
-    api, _ = _initialize_pydataverse(DATAVERSE_URL, API_TOKEN)
+    assert DATAVERSE_URL is not None, "Please provide the Dataverse URL"
+
+    api, _ = _initialize_pydataverse(DATAVERSE_URL.rstrip("/"), API_TOKEN)
     ds = Dataset()
     ds.from_json(json_data)
 
