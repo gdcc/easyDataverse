@@ -402,6 +402,9 @@ def process_name(attr_name, common_part):
         str: The processed attribute name.
     """
 
+    if len(attr_name) == 0:
+        raise ValueError("Attribute name cannot be empty.")
+
     # If the first letter is not aplhabet, append an underscore
     if attr_name[0].isnumeric():
         # Convert number to word
