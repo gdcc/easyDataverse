@@ -401,6 +401,30 @@ def process_name(attr_name, common_part):
     Returns:
         str: The processed attribute name.
     """
+
+    if len(attr_name) == 0:
+        raise ValueError("Attribute name cannot be empty.")
+
+    # If the first letter is not aplhabet, append an underscore
+    if attr_name[0].isnumeric():
+        # Convert number to word
+        mapping = {
+            "0": "zero",
+            "1": "one",
+            "2": "two",
+            "3": "three",
+            "4": "four",
+            "5": "five",
+            "6": "six",
+            "7": "seven",
+            "8": "eight",
+            "9": "nine",
+        }
+        attr_name = mapping[attr_name[0]] + "_" + attr_name[1:]
+    elif not attr_name[0].isalpha():
+        # If the first character is not a letter, remove it
+        attr_name = attr_name[1:]
+
     return camel_to_snake(attr_name).replace(common_part, "", 1).replace(" ", "")
 
 
