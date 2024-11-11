@@ -101,10 +101,8 @@ class TestProcessName:
         common_part = ""
 
         # Act
-        processed_name = process_name(attr_name, common_part)
-
-        # Assert
-        assert processed_name == ""
+        with pytest.raises(ValueError):
+            processed_name = process_name(attr_name, common_part)
 
     # Empty common part returns processed attribute name without common part.
     @pytest.mark.unit
