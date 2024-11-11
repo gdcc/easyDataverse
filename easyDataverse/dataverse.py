@@ -479,13 +479,19 @@ class Dataverse(BaseModel):
         data = {}
 
         for field in fields:
-            node = findall_by_attr(tree, field.typeName, "typeName")[0]
-            name = node.name
-            dvtype = node.typeClass
+            result = findall_by_attr(tree, field.typeName, "typeName")
 
-            if dvtype.lower() == "compound":
-                data[name] = self._process_compound(field.value, tree)
+            if len(result) > 0:
+                node = result[0]
+                name = node.name
+                dvtype = node.typeClass
+
+                if dvtype.lower() == "compound":
+                    data[name] = self._process_compound(field.value, tree)
+                else:
+                    data[name] = field.value
             else:
+                name = field.typeName
                 data[name] = field.value
 
         return data
