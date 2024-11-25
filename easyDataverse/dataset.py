@@ -225,10 +225,16 @@ class Dataset(BaseModel):
 
         return self.p_id
 
-    def update(self):
+    def update(self, replace: bool = True):
         """Updates a dataset if a p_id has been given.
 
         Use this function to update a dataset that has already been uploaded to Dataverse.
+
+        Args:
+            replace (bool, optional): Whether to replace the dataset or not. Defaults to True.
+
+        Raises:
+            HTTPError: If the dataset could not be updated.
         """
 
         if not self.p_id:
@@ -238,6 +244,7 @@ class Dataset(BaseModel):
             to_change=self._extract_changes(),
             p_id=self.p_id,  # type: ignore
             files=self.files,
+            replace=replace,
             DATAVERSE_URL=str(self.DATAVERSE_URL),  # type: ignore
             API_TOKEN=str(self.API_TOKEN),
         )
