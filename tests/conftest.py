@@ -26,3 +26,11 @@ def minimal_upload():
         dict: The contents of the 'minimal_upload.json' file.
     """
     return json.load(open("tests/fixtures/minimal_upload.json"))
+
+
+@pytest.fixture()
+def minimal_upload_other_license():
+    """
+    Returns the contents of the 'minimal_upload.json' file as a dictionary.
+    """
+    return json.load(open("tests/fixtures/minimal_upload_other_license.json"))
