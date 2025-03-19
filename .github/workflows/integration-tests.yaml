@@ -1,6 +1,10 @@
 name: Integration Tests
 
-on: [push]
+on:
+  push:
+    paths:
+      - 'easyDataverse/**'
+      - 'tests/**'
 
 jobs:
   build:
@@ -8,13 +12,13 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ['3.8', '3.9', '3.10', '3.11']
 
     env:
       PORT: 8080
     steps:
-      - name: "Checkout"
-        uses: "actions/checkout@v4"
+      - name: 'Checkout'
+        uses: 'actions/checkout@v4'
       - name: Run Dataverse Action
         id: dataverse
         uses: gdcc/dataverse-action@main

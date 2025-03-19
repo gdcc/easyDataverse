@@ -5,11 +5,20 @@ from typing import Callable, Dict, List, Optional, Tuple, IO
 from urllib import parse
 
 import requests
+from easyDataverse.license import License
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from anytree import Node, findall_by_attr
 from dotted_dict import DottedDict
-from pydantic import UUID4, BaseModel, ConfigDict, Field, HttpUrl, PrivateAttr
+from pydantic import (
+    UUID4,
+    BaseModel,
+    ConfigDict,
+    Field,
+    HttpUrl,
+    PrivateAttr,
+    computed_field,
+)
 from pyDataverse.api import DataAccessApi, NativeApi
 import rich
 
@@ -51,7 +60,7 @@ class Dataverse(BaseModel):
         description="The native API provided by PyDataverse to use for interacting with the Dataverse installation beyond EasyDataverse.",
     )
 
-    _dataset_gen: Callable = PrivateAttr(default=None)
+    _dataset_gen: Callable = PrivateAttr()
     _connected: bool = PrivateAttr(default=False)
 
     def __init__(
@@ -69,6 +78,18 @@ class Dataverse(BaseModel):
             base_url=str(self.server_url),
             api_token=str(self.api_token),  # type: ignore
         )
+
+    @computed_field(description="The licenses available in the Dataverse installation.")
+    @property
+    def licenses(self) -> Dict[str, License]:
+        """The licenses available in the Dataverse installation."""
+        return self._fetch_licenses()
+
+    @computed_field(description="The default license of the Dataverse installation.")
+    @property
+    def default_license(self) -> License:
+        """The default license of the Dataverse installation."""
+        return next(filter(lambda x: x.is_default, self.licenses.values()))
 
     def _connect(self) -> None:
         """Connects to a Dataverse installation and adds all metadtablocks as classes.
@@ -112,6 +133,7 @@ class Dataverse(BaseModel):
             dataset = Dataset(
                 API_TOKEN=str(self.api_token),
                 DATAVERSE_URL=self.server_url,
+                license=self.default_license,
             )
 
             block_names = gather_metadatablock_names(str(self.server_url))
@@ -159,7 +181,9 @@ class Dataverse(BaseModel):
         compounds = list(filter(lambda field: "childFields" in field, fields.values()))
 
         block_cls = create_dataverse_class(
-            metadatablock.data.name, primitives, compounds  # type: ignore
+            metadatablock.data.name,  # type: ignore
+            primitives,
+            compounds,  # type: ignore
         )
         block_cls._metadatablock_name = metadatablock.data.name  # type: ignore
 
@@ -192,6 +216,17 @@ class Dataverse(BaseModel):
 
         return False
 
+    def _fetch_licenses(self) -> Dict[str, License]:
+        """Fetches the licenses from the Dataverse installation."""
+        response = requests.get(parse.urljoin(str(self.server_url), "/api/licenses"))
+
+        if response.status_code != 200:
+            raise Exception(f"Error getting licenses: {response.text}")
+
+        return {
+            license["name"]: License(**license) for license in response.json()["data"]
+        }
+
     # ! Printers
     def list_metadatablocks(self, detailed: bool = False):
         """
@@ -207,11 +242,22 @@ class Dataverse(BaseModel):
         Returns:
             None
         """
-        assert (
-            self._connected
-        ), "Please connect to a Dataverse instance to list metadatablocks."
+        assert self._connected, (
+            "Please connect to a Dataverse instance to list metadatablocks."
+        )
 
         self.create_dataset().list_metadatablocks(detailed=detailed)
+
+    def list_licenses(self):
+        """Lists the licenses available in the Dataverse installation."""
+        rich.print("[bold]Licenses[/bold]")
+        for license in self.licenses.values():
+            if license.is_default:
+                print(f"- {license.name} (default)")
+            else:
+                print(f"- {license.name}")
+
+        print("\n")
 
     # ! Dataset Handlers
 
@@ -307,6 +353,7 @@ class Dataverse(BaseModel):
 
         # Fetch and extract data
         remote_ds = self._fetch_dataset(pid, version)
+        dataset.license = self.licenses[remote_ds.data.latestVersion.license.name]  # type: ignore
         dataset.p_id = remote_ds.data.latestVersion.datasetPersistentId  # type: ignore
         blocks = remote_ds.data.latestVersion.metadataBlocks  # type: ignore
         files = remote_ds.data.latestVersion.files  # type: ignore
@@ -452,18 +499,18 @@ class Dataverse(BaseModel):
             Dict[str, Dict]: Mapping of version number to dataset metadata.
         """
 
-        assert (
-            self.native_api is not None
-        ), "Native API is not available. Please connect to a Dataverse installation first."
+        assert self.native_api is not None, (
+            "Native API is not available. Please connect to a Dataverse installation first."
+        )
 
         response = self.native_api.get_dataset_versions(dataset_pid)
 
-        if response.status_code != 200:
-            raise Exception(f"Error getting dataset versions: {response.text}")
+        if response.status_code != 200:  # type: ignore
+            raise Exception(f"Error getting dataset versions: {response.text}")  # type: ignore
 
         return {
             str(dataset["versionNumber"]): dataset
-            for dataset in response.json()["data"]
+            for dataset in response.json()["data"]  # type: ignore
             if dataset["versionState"] != "DRAFT"
         }
 
@@ -565,9 +612,9 @@ class Dataverse(BaseModel):
         """
 
         assert "metadatablocks" in data, "No metadatablocks found in JSON."
-        assert isinstance(
-            data["metadatablocks"], dict
-        ), "Metadatablocks must be a dictionary."
+        assert isinstance(data["metadatablocks"], dict), (
+            "Metadatablocks must be a dictionary."
+        )
 
         for name, content in data["metadatablocks"].items():
             if not hasattr(dataset, name):
