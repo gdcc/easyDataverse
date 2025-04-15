@@ -101,10 +101,8 @@ class TestProcessName:
         common_part = ""
 
         # Act
-        processed_name = process_name(attr_name, common_part)
-
-        # Assert
-        assert processed_name == ""
+        with pytest.raises(ValueError):
+            process_name(attr_name, common_part)
 
     # Empty common part returns processed attribute name without common part.
     @pytest.mark.unit
@@ -434,9 +432,9 @@ class TestCreateFunctionSignature:
         # Assert
         assert result[0].name == "name"
         assert result[0].default.__name__ == "empty"
-        assert result[0].type == str
+        assert result[0].type is str
         assert result[1].name == "value"
-        assert result[1].type == int
+        assert result[1].type is int
         assert result[1].default.__name__ == "empty"
         assert result[2].name == "optional"
         assert result[2].type == Optional[str]
@@ -665,7 +663,7 @@ class TestGetFieldType:
 
         # Assert
         generated_enum = get_args(result)[0]
-        assert get_args(result)[1] == type(None)
+        assert get_args(result)[1] is type(None)
         assert issubclass(generated_enum, Enum)
         assert generated_enum.__name__ == "single_cv_field"
         assert generated_enum.VALUE1.value == "value1"

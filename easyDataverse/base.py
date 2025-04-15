@@ -410,10 +410,10 @@ class DataverseBase(BaseModel):
 
         for field in block.model_fields.values():
             annot = field.annotation
-            dtype = [t for t in get_args(annot) if t != type(None)][0]
+            dtype = [t for t in get_args(annot) if t is not type(None)][0]
             alias = field.alias
 
-            is_multiple = get_origin(annot) == list
+            is_multiple = get_origin(annot) is list
             is_complex = hasattr(dtype, "model_fields")
 
             if dtype.__name__ == "Annotated":

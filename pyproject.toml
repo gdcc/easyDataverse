@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "easyDataverse"
-version = "0.4.1"
+version = "0.4.2"
 description = "Lightweight Dataverse interface in Python to upload, download and update datasets found in Dataverse instances."
 authors = ["Jan Range <jan.range@simtech.uni-stuttgart.de>"]
 license = "MIT License"

@@ -44,3 +44,13 @@ class TestConnection:
         assert hasattr(citation, "author")
         assert hasattr(citation, "dataset_contact")
         assert hasattr(citation, "ds_description")
+
+    def test_numeric_namespace(self):
+        # Harvard Dataverse hosts a metadata block with first letter numeric
+        # attribute names. Hence, this tests checks if the numeric parts are
+        # parsed correctly.
+
+        try:
+            Dataverse(server_url="https://dataverse.harvard.edu")
+        except ValueError as e:
+            AssertionError("Failed to parse numeric namespace: " + str(e))

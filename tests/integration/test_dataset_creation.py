@@ -25,7 +25,8 @@ class TestDatasetCreation:
         dataset.citation.subject = ["Other"]
         dataset.citation.add_author(name="John Doe")
         dataset.citation.add_ds_description(
-            value="This is a description of the dataset"
+            value="This is a description of the dataset",
+            date="2024",
         )
         dataset.citation.add_dataset_contact(
             name="John Doe",
