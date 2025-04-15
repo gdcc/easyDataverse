@@ -15,7 +15,6 @@ class TestDatasetDownload:
         credentials,
         minimal_upload,
     ):
-
         # Arrange
         base_url, api_token = credentials
         url = f"{base_url}/api/dataverses/root/datasets"
@@ -43,9 +42,9 @@ class TestDatasetDownload:
         expected = self.sort_citation(minimal_upload)
         result = self.sort_citation(dataset.dataverse_dict())
 
-        assert (
-            result == expected
-        ), "The downloaded dataset does not match the expected dataset."
+        assert result == expected, (
+            "The downloaded dataset does not match the expected dataset."
+        )
 
     @pytest.mark.integration
     def test_dataset_download_with_file(
@@ -53,7 +52,6 @@ class TestDatasetDownload:
         credentials,
         minimal_upload,
     ):
-
         # Arrange
         base_url, api_token = credentials
         url = f"{base_url}/api/dataverses/root/datasets"
@@ -95,16 +93,16 @@ class TestDatasetDownload:
         expected = self.sort_citation(minimal_upload)
         result = self.sort_citation(dataset.dataverse_dict())
 
-        assert (
-            result == expected
-        ), "The downloaded dataset does not match the expected dataset."
+        assert result == expected, (
+            "The downloaded dataset does not match the expected dataset."
+        )
 
-        assert (
-            len(dataset.files) == 1
-        ), "The dataset does not contain the expected number of files."
-        assert (
-            dataset.files[0].filepath == "./test_file.txt"
-        ), "The file path does not match the expected file path."
+        assert len(dataset.files) == 1, (
+            "The dataset does not contain the expected number of files."
+        )
+        assert dataset.files[0].filepath == "./test_file.txt", (
+            "The file path does not match the expected file path."
+        )
         assert os.path.exists(dataset.files[0].filepath), "The file was not downloaded."
         assert (
             open("tests/fixtures/test_file.txt", "rb").read()
@@ -117,7 +115,6 @@ class TestDatasetDownload:
         credentials,
         minimal_upload,
     ):
-
         # Arrange
         base_url, api_token = credentials
         url = f"{base_url}/api/dataverses/root/datasets"
@@ -162,16 +159,16 @@ class TestDatasetDownload:
         expected = self.sort_citation(minimal_upload)
         result = self.sort_citation(dataset.dataverse_dict())
 
-        assert (
-            result == expected
-        ), "The downloaded dataset does not match the expected dataset."
+        assert result == expected, (
+            "The downloaded dataset does not match the expected dataset."
+        )
 
-        assert (
-            len(dataset.files) == 1
-        ), "The dataset does not contain the expected number of files."
-        assert (
-            dataset.files[0].filepath == "./test_file.txt"
-        ), "The file path does not match the expected file path."
+        assert len(dataset.files) == 1, (
+            "The dataset does not contain the expected number of files."
+        )
+        assert dataset.files[0].filepath == "./test_file.txt", (
+            "The file path does not match the expected file path."
+        )
         assert os.path.exists(dataset.files[0].filepath), "The file was not downloaded."
         assert (
             open("tests/fixtures/test_file.txt", "rb").read()

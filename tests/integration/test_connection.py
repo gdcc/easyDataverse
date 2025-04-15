@@ -1,5 +1,7 @@
-from pyDataverse.api import NativeApi
 import pytest
+
+from pyDataverse.api import NativeApi
+from easyDataverse.license import License
 from easyDataverse.dataverse import Dataverse
 
 
@@ -44,6 +46,27 @@ class TestConnection:
         assert hasattr(citation, "author")
         assert hasattr(citation, "dataset_contact")
         assert hasattr(citation, "ds_description")
+
+    def test_license_list(self, credentials):
+        # Arrange
+        base_url, api_token = credentials
+        dataverse = Dataverse(
+            server_url=base_url,
+            api_token=api_token,
+        )
+
+        # Act
+        licenses = dataverse.licenses
+        default_license = dataverse.default_license
+
+        # Assert
+        assert len(licenses) > 0
+        assert isinstance(licenses, dict)
+        assert isinstance(list(licenses.values())[0], License)
+
+        assert isinstance(default_license, License)
+        assert default_license.is_default
+        assert default_license.name == "CC0 1.0"
 
     def test_numeric_namespace(self):
         # Harvard Dataverse hosts a metadata block with first letter numeric

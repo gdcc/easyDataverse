@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 from dvuploader import File, add_directory
 
 from easyDataverse.base import DataverseBase
+from easyDataverse.license import License
 from easyDataverse.uploader import update_dataset, upload_to_dataverse
 from easyDataverse.utils import YAMLDumper
 
@@ -30,11 +31,27 @@ REQUIRED_FIELDS = [
 class Dataset(BaseModel):
     model_config = ConfigDict(
         extra="allow",
+        validate_assignment=True,
     )
 
-    metadatablocks: Dict[str, DataverseBase] = dict()
-    p_id: Optional[str] = None
-    files: List[File] = Field(default_factory=list)
+    license: License = Field(
+        description="The license of the dataset.",
+    )
+
+    metadatablocks: Dict[str, DataverseBase] = Field(
+        default_factory=dict,
+        description="The metadatablocks of the dataset.",
+    )
+
+    p_id: Optional[str] = Field(
+        default=None,
+        description="The persistent identifier of the dataset.",
+    )
+
+    files: List[File] = Field(
+        default_factory=list,
+        description="The files of the dataset.",
+    )
 
     API_TOKEN: Optional[str] = Field(None)
     DATAVERSE_URL: Optional[HttpUrl] = Field(None)
@@ -159,7 +176,12 @@ class Dataset(BaseModel):
         for block in self.metadatablocks.values():
             blocks.update(block.dataverse_dict())
 
-        return {"datasetVersion": {"metadataBlocks": blocks}}
+        return {
+            "datasetVersion": {
+                "license": self.license.name,
+                "metadataBlocks": blocks,
+            }
+        }
 
     def dataverse_json(self, indent: int = 2) -> str:
         """Returns a JSON representation of the dataverse dataset."""
@@ -264,9 +286,9 @@ class Dataset(BaseModel):
         for field in REQUIRED_FIELDS:
             results.append(self._validate_required_field(field))
 
-        assert all(
-            result for result in results
-        ), "Required fields are missing or empty. Please provide a value for these fields."
+        assert all(result for result in results), (
+            "Required fields are missing or empty. Please provide a value for these fields."
+        )
 
     def _validate_required_field(self, path: str) -> bool:
         """
@@ -344,7 +366,7 @@ class Dataset(BaseModel):
         'download_files' set to 'False'.
         """
 
-        file = list(filter(lambda f: f.fileName == filename, self.files))
+        file = list(filter(lambda f: f.fileName == filename, self.files))  # type: ignore
 
         if len(file) == 0:
             raise ValueError(
