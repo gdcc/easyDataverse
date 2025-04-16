@@ -8,7 +8,7 @@ readme = "Readme.md"
 packages = [{ include = "easyDataverse" }]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 pydantic = "^2.7.1"
 pydataverse = "^0.3.1"
 pyaml = "^24.4.0"
