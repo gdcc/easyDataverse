@@ -172,13 +172,10 @@ def _update_metadata(
         requests.HTTPError: If the request fails.
     """
 
-    if replace:
-        EDIT_ENDPOINT = f"{base_url.rstrip('/')}/api/datasets/:persistentId/editMetadata?persistentId={p_id}&replace=true"
-    else:
-        EDIT_ENDPOINT = f"{base_url.rstrip('/')}/api/datasets/:persistentId/editMetadata?persistentId={p_id}&replace=false"
-
     headers = {"X-Dataverse-key": api_token}
-    response = requests.put(EDIT_ENDPOINT, headers=headers, json=to_change)
+    endpoint = f"/api/datasets/:persistentId/editMetadata?persistentId={p_id}&replace={str(replace).lower()}"
+    url = urljoin(base_url, endpoint)
+    response = requests.put(url, headers=headers, json=to_change)
 
     if response.status_code != 200:
         raise requests.HTTPError(f"Failed to update metadata: {response.text}")
