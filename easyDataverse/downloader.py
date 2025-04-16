@@ -4,7 +4,7 @@ import re
 from typing import Dict, List
 
 import aiofiles
-import aiohttp
+import httpx
 import rich
 from dvuploader import File
 from pyDataverse.api import DataAccessApi
@@ -35,21 +35,20 @@ async def download_files(
     else:
         headers = {}
 
-    timeout = aiohttp.ClientTimeout(total=0, connect=0, sock_connect=0, sock_read=0)
-    connector = aiohttp.TCPConnector(limit=n_parallel_downloads)
-    async with aiohttp.ClientSession(
+    limits = httpx.Limits(max_connections=n_parallel_downloads)
+    timeout = httpx.Timeout(None)
+    async with httpx.AsyncClient(
         base_url=data_api.base_url,
-        connector=connector,
         headers=headers,
         timeout=timeout,
-    ) as session:
-
+        limits=limits,
+    ) as client:
         with progress:
             rich.print("\n[bold]Downloading files[/bold]\n")
 
             tasks = [
                 _download_file(
-                    session=session,
+                    client=client,
                     file=file,
                     filedir=filedir,
                     progress=progress,
@@ -80,7 +79,6 @@ def setup_progress_bars(
     progress = Progress()
 
     for file in files:
-
         filename = file["dataFile"]["filename"]
         filesize = file["dataFile"]["filesize"]
         directory_label = file.get("directoryLabel", "")
@@ -120,7 +118,7 @@ def setup_pbar(
 
 
 async def _download_file(
-    session: aiohttp.ClientSession,
+    client: httpx.AsyncClient,
     file: Dict,
     filedir: str,
     progress: Progress,
@@ -128,10 +126,10 @@ async def _download_file(
     over_threshold: bool,
 ):
     """
-    Downloads a file from a given URL using the provided session and saves it to the specified directory.
+    Downloads a file from a given URL using the provided client and saves it to the specified directory.
 
     Args:
-        session (aiohttp.ClientSession): The aiohttp client session to use for the download.
+        client (httpx.AsyncClient): The httpx async client to use for the download.
         file (Dict): The file metadata dictionary.
         filedir (str): The directory to save the downloaded file.
         progress (Progress): The progress object to track the download progress.
@@ -155,20 +153,17 @@ async def _download_file(
 
     url = f"/api/access/datafile/{file_id}"
 
-    async with session.get(url) as response:
+    async with client.stream("GET", url) as response:
         response.raise_for_status()
         os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
         async with aiofiles.open(local_path, "wb") as f:
-            while True:
-                chunk = await response.content.read(CHUNK_SIZE)
+            async for chunk in response.aiter_bytes(chunk_size=CHUNK_SIZE):
                 progress.advance(task_id, advance=len(chunk))
 
                 if over_threshold:
                     progress.update(task_id, visible=False)
 
-                if not chunk:
-                    break
                 await f.write(chunk)
 
     return File(

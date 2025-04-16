@@ -4,7 +4,7 @@ import json
 from typing import Callable, Dict, List, Optional, Tuple, IO
 from urllib import parse
 
-import requests
+import httpx
 from easyDataverse.license import License
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -110,7 +110,7 @@ class Dataverse(BaseModel):
             url (AnyHttpUrl): URL to the Dataverse installation
 
         Raises:
-            requests.HTTPError: When the URL does not point to a valid DV
+            httpx.HTTPError: When the URL does not point to a valid DV
 
         Returns:
             Dataset: Object that contains all metadatablocks
@@ -198,9 +198,7 @@ class Dataverse(BaseModel):
         Raises:
             ValueError: If the server URL is not a valid Dataverse installation or version info is not found.
         """
-        response = requests.get(
-            parse.urljoin(str(self.server_url), "/api/info/version")
-        )
+        response = httpx.get(parse.urljoin(str(self.server_url), "/api/info/version"))
 
         if response.status_code != 200:
             raise ValueError(
@@ -218,7 +216,7 @@ class Dataverse(BaseModel):
 
     def _fetch_licenses(self) -> Dict[str, License]:
         """Fetches the licenses from the Dataverse installation."""
-        response = requests.get(parse.urljoin(str(self.server_url), "/api/licenses"))
+        response = httpx.get(parse.urljoin(str(self.server_url), "/api/licenses"))
 
         if response.status_code != 200:
             raise Exception(f"Error getting licenses: {response.text}")
@@ -411,7 +409,8 @@ class Dataverse(BaseModel):
         if version != "latest":
             return self._fetch_dataset_version(pid, str(version))
 
-        return DottedDict(requests.get(url, headers=header).json())
+        response = httpx.get(url, headers=header)
+        return DottedDict(response.json())
 
     def _fetch_files(
         self,

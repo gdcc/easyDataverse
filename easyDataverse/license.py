@@ -1,6 +1,6 @@
 from urllib import parse
 from pydantic import BaseModel, Field
-import requests
+import httpx
 
 
 class License(BaseModel):
@@ -57,7 +57,7 @@ class License(BaseModel):
         Raises:
             Exception: If the license cannot be found or if there's an error communicating with the server
         """
-        response = requests.get(parse.urljoin(server_url, "/api/licenses"))
+        response = httpx.get(parse.urljoin(server_url, "/api/licenses"))
 
         if response.status_code != 200:
             raise Exception(f"Error getting licenses: {response.text}")

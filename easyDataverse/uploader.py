@@ -1,5 +1,5 @@
 from urllib.parse import urljoin
-import requests
+import httpx
 
 from rich.panel import Panel
 from rich.console import Console
@@ -165,11 +165,11 @@ def _update_metadata(
         api_token (str): API token of the user.
 
     Raises:
-        requests.HTTPError: If the request fails.
+        httpx.HTTPError: If the request fails.
     """
+
     EDIT_ENDPOINT = f"{base_url.rstrip('/')}/api/datasets/:persistentId/editMetadata?persistentId={p_id}&replace=true"
     headers = {"X-Dataverse-key": api_token}
 
-    response = requests.put(EDIT_ENDPOINT, headers=headers, json=to_change)
-
+    response = httpx.put(EDIT_ENDPOINT, headers=headers, json=to_change)
     response.raise_for_status()
