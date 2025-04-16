@@ -5,6 +5,7 @@ on:
     paths:
       - 'easyDataverse/**'
       - 'tests/**'
+      - '.github/workflows/integration-tests.yaml'
 
 jobs:
   build:
