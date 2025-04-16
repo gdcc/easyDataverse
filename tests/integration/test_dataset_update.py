@@ -1,7 +1,7 @@
 from typing import Dict
 
 import pytest
-import requests
+import httpx
 
 from easyDataverse import Dataverse
 
@@ -13,11 +13,10 @@ class TestDatasetUpdate:
         credentials,
         minimal_upload,
     ):
-
         # Arrange
         base_url, api_token = credentials
         url = f"{base_url}/api/dataverses/root/datasets"
-        response = requests.post(
+        response = httpx.post(
             url=url,
             json=minimal_upload,
             headers={
@@ -45,7 +44,7 @@ class TestDatasetUpdate:
             f"{base_url}/api/datasets/:persistentId/versions/:draft?persistentId={pid}"
         )
 
-        response = requests.get(
+        response = httpx.get(
             url,
             headers={"X-Dataverse-key": api_token},
         )
@@ -60,9 +59,9 @@ class TestDatasetUpdate:
         )
 
         # Assert
-        assert (
-            title_field["value"] == "Title has changed"
-        ), "The updated dataset title does not match the expected title."
+        assert title_field["value"] == "Title has changed", (
+            "The updated dataset title does not match the expected title."
+        )
 
     @staticmethod
     def sort_citation(dataset: Dict):

@@ -2,8 +2,7 @@ import asyncio
 from typing import List
 from urllib.parse import urljoin
 
-import aiohttp
-import requests
+import httpx
 from dotted_dict import DottedDict
 
 
@@ -18,10 +17,11 @@ def gather_metadatablock_names(base_url: str):
         list: A list of metadata block names.
     """
     all_blocks_url = urljoin(base_url, "api/metadatablocks")
-    response = requests.get(all_blocks_url)
-    response.raise_for_status()
+    with httpx.Client() as client:
+        response = client.get(all_blocks_url)
+        response.raise_for_status()
 
-    return [block["name"] for block in response.json()["data"]]
+        return [block["name"] for block in response.json()["data"]]
 
 
 async def fetch_metadatablocks(block_names: List[str], base_url: str):
@@ -34,10 +34,10 @@ async def fetch_metadatablocks(block_names: List[str], base_url: str):
     Returns:
         List[dict]: A list of dictionaries containing the metadata for each block.
     """
-    async with aiohttp.ClientSession() as session:
+    async with httpx.AsyncClient() as client:
         tasks = [
             _fetch_metadatablock(
-                session,
+                client,
                 block_name,
                 base_url,
             )
@@ -46,20 +46,18 @@ async def fetch_metadatablocks(block_names: List[str], base_url: str):
         return await asyncio.gather(*tasks)
 
 
-async def _fetch_metadatablock(session, block_name, base_url):
+async def _fetch_metadatablock(client, block_name, base_url):
     """
     Fetches a metadata block from the Dataverse server.
 
     Args:
-        session (aiohttp.ClientSession): The aiohttp client session.
+        client (httpx.AsyncClient): The httpx async client.
         block_name (str): The name of the metadata block to fetch.
         base_url (str): The base URL of the Dataverse server.
 
     Returns:
         dict: The JSON response containing the metadata block.
     """
-    async with session.get(
-        urljoin(base_url, f"api/metadatablocks/{block_name}")
-    ) as response:
-        response.raise_for_status()
-        return DottedDict(await response.json())
+    response = await client.get(urljoin(base_url, f"api/metadatablocks/{block_name}"))
+    response.raise_for_status()
+    return DottedDict(response.json())

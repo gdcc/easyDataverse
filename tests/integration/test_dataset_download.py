@@ -3,7 +3,7 @@ import os
 from typing import Dict
 
 import pytest
-import requests
+import httpx
 
 from easyDataverse import Dataverse
 
@@ -18,7 +18,7 @@ class TestDatasetDownload:
         # Arrange
         base_url, api_token = credentials
         url = f"{base_url}/api/dataverses/root/datasets"
-        response = requests.post(
+        response = httpx.post(
             url=url,
             json=minimal_upload,
             headers={
@@ -55,7 +55,7 @@ class TestDatasetDownload:
         # Arrange
         base_url, api_token = credentials
         url = f"{base_url}/api/dataverses/root/datasets"
-        response = requests.post(
+        response = httpx.post(
             url=url,
             json=minimal_upload,
             headers={
@@ -70,14 +70,15 @@ class TestDatasetDownload:
         # Add a file to the dataset
         url = f"{base_url}/api/datasets/:persistentId/add?persistentId={pid}"
         json_data = {"description": "Test"}
-        response = requests.post(
-            url=url,
-            headers={
-                "X-Dataverse-key": api_token,
-            },
-            data={"jsonData": json.dumps(json_data)},
-            files={"file": open("tests/fixtures/test_file.txt", "rb")},
-        )
+        with open("tests/fixtures/test_file.txt", "rb") as file:
+            response = httpx.post(
+                url=url,
+                headers={
+                    "X-Dataverse-key": api_token,
+                },
+                data={"jsonData": json.dumps(json_data)},
+                files={"file": file},
+            )
 
         response.raise_for_status()
 
@@ -118,7 +119,7 @@ class TestDatasetDownload:
         # Arrange
         base_url, api_token = credentials
         url = f"{base_url}/api/dataverses/root/datasets"
-        response = requests.post(
+        response = httpx.post(
             url=url,
             json=minimal_upload,
             headers={
@@ -133,14 +134,15 @@ class TestDatasetDownload:
         # Add a file to the dataset
         url = f"{base_url}/api/datasets/:persistentId/add?persistentId={pid}"
         json_data = {"description": "Test"}
-        response = requests.post(
-            url=url,
-            headers={
-                "X-Dataverse-key": api_token,
-            },
-            data={"jsonData": json.dumps(json_data)},
-            files={"file": open("tests/fixtures/test_file.txt", "rb")},
-        )
+        with open("tests/fixtures/test_file.txt", "rb") as file:
+            response = httpx.post(
+                url=url,
+                headers={
+                    "X-Dataverse-key": api_token,
+                },
+                data={"jsonData": json.dumps(json_data)},
+                files={"file": file},
+            )
 
         response.raise_for_status()
 
