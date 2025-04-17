@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 import nob
 import xmltodict
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field
 
 from dvuploader import File, add_directory
 
@@ -54,7 +54,7 @@ class Dataset(BaseModel):
     )
 
     API_TOKEN: Optional[str] = Field(None)
-    DATAVERSE_URL: Optional[HttpUrl] = Field(None)
+    DATAVERSE_URL: Optional[str] = Field(None)
 
     # ! Adders
     def add_metadatablock(self, metadatablock: DataverseBase) -> None:
@@ -85,6 +85,7 @@ class Dataset(BaseModel):
         file_name: Optional[str] = None,
         categories: List[str] = ["DATA"],
         description: str = "",
+        tab_ingest: bool = True,
     ):
         """Adds a file to the dataset based on the provided path.
 
@@ -94,6 +95,7 @@ class Dataset(BaseModel):
             file_name (str, optional): Name of the file in Dataverse. Defaults to None, which will use the basename of local_path.
             categories (List[str], optional): List of categories to assign to the file. Defaults to ["DATA"].
             description (str, optional): Description of the file. Defaults to "".
+            tab_ingest (bool, optional): Whether to use tab-separated ingest. Defaults to True.
 
         Raises:
             FileExistsError: If the file has already been added to the dataset.
@@ -105,6 +107,7 @@ class Dataset(BaseModel):
             description=description,
             categories=categories,
             file_name=file_name,  # type: ignore
+            tab_ingest=tab_ingest,  # type: ignore
         )
 
         if file not in self.files:

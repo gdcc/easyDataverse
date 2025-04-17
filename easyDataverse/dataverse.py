@@ -1,6 +1,7 @@
 import asyncio
 from copy import deepcopy
 import json
+from uuid import UUID
 from typing import Callable, Dict, List, Optional, Tuple, IO
 from urllib import parse
 
@@ -18,6 +19,7 @@ from pydantic import (
     HttpUrl,
     PrivateAttr,
     computed_field,
+    field_validator,
 )
 from pyDataverse.api import DataAccessApi, NativeApi
 import rich
@@ -45,12 +47,12 @@ class Dataverse(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    server_url: HttpUrl = Field(
+    server_url: str = Field(
         ...,
         description="The URL of the Dataverse installation to connect to.",
     )
 
-    api_token: Optional[UUID4] = Field(
+    api_token: Optional[str] = Field(
         default=None,
         description="The API token to use for authentication. If not provided, only public data can be accessed.",
     )
@@ -62,6 +64,25 @@ class Dataverse(BaseModel):
 
     _dataset_gen: Callable = PrivateAttr()
     _connected: bool = PrivateAttr(default=False)
+
+    @field_validator("server_url")
+    def validate_url(cls, v):
+        """Validate the server URL."""
+        try:
+            HttpUrl(v)
+            return v
+        except ValueError as e:
+            raise ValueError("Server URL must be a valid URL") from e
+
+    @field_validator("api_token")
+    def validate_api_token(cls, v):
+        """Validate the API token."""
+        if v is not None:
+            try:
+                UUID(v)
+                return v
+            except ValueError as e:
+                raise ValueError("API token must be a valid UUID") from e
 
     def __init__(
         self,
