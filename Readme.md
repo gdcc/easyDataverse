@@ -1,7 +1,7 @@
 <h1 align="center">
   EasyDataverse
   </br>
-  <a href="https://badge.fury.io/py/dvuploader"><img src="https://badge.fury.io/py/easyDataverse.svg" alt="PyPI version" height="18"></a>
+  <a href="https://badge.fury.io/py/easyDataverse"><img src="https://badge.fury.io/py/easyDataverse.svg" alt="PyPI version" height="18"></a>
   <img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/easyDataverse">
   </br>
   <img src="https://github.com/gdcc/easyDataverse/actions/workflows/unit-tests.yaml/badge.svg" alt="Build Badge">
