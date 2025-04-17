@@ -86,6 +86,7 @@ class Dataset(BaseModel):
         categories: List[str] = ["DATA"],
         description: str = "",
         tab_ingest: bool = True,
+        **file_kwargs,
     ):
         """Adds a file to the dataset based on the provided path.
 
@@ -96,6 +97,7 @@ class Dataset(BaseModel):
             categories (List[str], optional): List of categories to assign to the file. Defaults to ["DATA"].
             description (str, optional): Description of the file. Defaults to "".
             tab_ingest (bool, optional): Whether to use tab-separated ingest. Defaults to True.
+            **file_kwargs: Additional keyword arguments to pass to the DVUploaderFile constructor.
 
         Raises:
             FileExistsError: If the file has already been added to the dataset.
@@ -108,6 +110,7 @@ class Dataset(BaseModel):
             categories=categories,
             file_name=file_name,  # type: ignore
             tab_ingest=tab_ingest,  # type: ignore
+            **file_kwargs,
         )
 
         if file not in self.files:
