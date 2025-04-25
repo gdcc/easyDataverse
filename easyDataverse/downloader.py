@@ -168,7 +168,7 @@ async def _download_file(
 
     return File(
         filepath=local_path,
-        file_id=str(file_id),
+        file_id=str(file_id),  # type: ignore
         **file,
     )
 
