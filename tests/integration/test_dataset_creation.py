@@ -3,6 +3,7 @@ import pytest
 from easyDataverse.dataset import Dataset
 
 from easyDataverse.dataverse import Dataverse
+from easyDataverse.license import CustomLicense
 
 
 class TestDatasetCreation:
@@ -130,6 +131,66 @@ class TestDatasetCreation:
 
         assert self.sort_citation(dataset) == minimal_upload_other_license
 
+    @pytest.mark.integration
+    def test_creation_custom_terms_of_use(
+        self,
+        credentials,
+    ):
+        # Arrange
+        base_url, api_token = credentials
+        dataverse = Dataverse(
+            server_url=base_url,
+            api_token=api_token,
+        )
+
+        # Act
+        dataset = dataverse.create_dataset()
+        dataset.license = CustomLicense(
+            termsOfUse="This is a custom terms of use",
+            confidentialityDeclaration="This is a custom confidentiality declaration",
+            specialPermissions="This is a custom special permissions",
+            restrictions="This is a custom restrictions",
+            citationRequirements="This is a custom citation requirements",
+            depositorRequirements="This is a custom depositor requirements",
+            conditions="This is a custom conditions",
+            disclaimer="This is a custom disclaimer",
+        )
+
+        dataset.citation.title = "My dataset"
+        dataset.citation.subject = ["Other"]
+        dataset.citation.add_author(name="John Doe")
+        dataset.citation.add_ds_description(
+            value="This is a description of the dataset",
+            date="2024",
+        )
+        dataset.citation.add_dataset_contact(
+            name="John Doe",
+            email="john@doe.com",
+        )
+
+        pid = dataset.upload(dataverse_name="root")
+
+        # Re-fetch the dataset
+        dataset = dataverse.load_dataset(pid)
+
+        # Check the terms of use
+        assert isinstance(dataset.license, CustomLicense)
+        license = dataset.license
+        assert license.terms_of_use == "This is a custom terms of use"
+        assert license.special_permissions == "This is a custom special permissions"
+        assert license.restrictions == "This is a custom restrictions"
+        assert license.citation_requirements == "This is a custom citation requirements"
+        assert license.conditions == "This is a custom conditions"
+        assert license.disclaimer == "This is a custom disclaimer"
+        assert (
+            license.confidentiality_declaration
+            == "This is a custom confidentiality declaration"
+        )
+        assert (
+            license.depositor_requirements == "This is a custom depositor requirements"
+        )
+
+    @pytest.mark.integration
     def test_tab_ingest_disabled(
         self,
         credentials,

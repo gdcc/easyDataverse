@@ -1,17 +1,17 @@
 import json
 import os
 from json import dumps
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import nob
 import xmltodict
 import yaml
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from dvuploader import File, add_directory
 
 from easyDataverse.base import DataverseBase
-from easyDataverse.license import License
+from easyDataverse.license import CustomLicense, License
 from easyDataverse.uploader import update_dataset, upload_to_dataverse
 from easyDataverse.utils import YAMLDumper
 
@@ -34,7 +34,8 @@ class Dataset(BaseModel):
         validate_assignment=True,
     )
 
-    license: License = Field(
+    license: Union[License, CustomLicense, None] = Field(
+        default=None,
         description="The license of the dataset.",
     )
 
@@ -182,10 +183,18 @@ class Dataset(BaseModel):
         for block in self.metadatablocks.values():
             blocks.update(block.dataverse_dict())
 
+        match self.license:
+            case License():
+                terms = {"license": self.license.name}
+            case CustomLicense():
+                terms = self.license.model_dump(by_alias=True, exclude={"name"})
+            case _:
+                terms = {}
+
         return {
             "datasetVersion": {
-                "license": self.license.name,
                 "metadataBlocks": blocks,
+                **terms,
             }
         }
 
