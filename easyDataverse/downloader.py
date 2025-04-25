@@ -153,7 +153,7 @@ async def _download_file(
 
     url = f"/api/access/datafile/{file_id}"
 
-    async with client.stream("GET", url) as response:
+    async with client.stream("GET", url, follow_redirects=True) as response:
         response.raise_for_status()
         os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
