@@ -183,13 +183,12 @@ class Dataset(BaseModel):
         for block in self.metadatablocks.values():
             blocks.update(block.dataverse_dict())
 
-        match self.license:
-            case License():
-                terms = {"license": self.license.name}
-            case CustomLicense():
-                terms = self.license.model_dump(by_alias=True, exclude={"name"})
-            case _:
-                terms = {}
+        if isinstance(self.license, License):
+            terms = {"license": self.license.name}
+        elif isinstance(self.license, CustomLicense):
+            terms = self.license.model_dump(by_alias=True, exclude={"name"})
+        else:
+            terms = {}
 
         return {
             "datasetVersion": {
