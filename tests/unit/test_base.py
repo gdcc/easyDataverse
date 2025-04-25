@@ -6,10 +6,8 @@ from easyDataverse.base import DataverseBase
 
 
 class TestBase:
-
     @pytest.mark.unit
     def test_template(self):
-
         # Arrange
         class Child(DataverseBase):
             bar: Optional[str] = Field(
@@ -18,7 +16,6 @@ class TestBase:
             )
 
         class Test(DataverseBase):
-
             foo: Optional[str] = Field(
                 default=None,
                 alias="Foo",

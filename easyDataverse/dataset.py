@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Union
 import nob
 import xmltodict
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 from dvuploader import File, add_directory
 
