@@ -6,7 +6,7 @@ from typing import Callable, Dict, List, Optional, Tuple, IO
 from urllib import parse
 
 import httpx
-from easyDataverse.license import License
+from easyDataverse.license import CustomLicense, License
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from anytree import Node, findall_by_attr
@@ -372,10 +372,22 @@ class Dataverse(BaseModel):
 
         # Fetch and extract data
         remote_ds = self._fetch_dataset(pid, version)
-        dataset.license = self.licenses[remote_ds.data.latestVersion.license.name]  # type: ignore
-        dataset.p_id = remote_ds.data.latestVersion.datasetPersistentId  # type: ignore
-        blocks = remote_ds.data.latestVersion.metadataBlocks  # type: ignore
-        files = remote_ds.data.latestVersion.files  # type: ignore
+
+        # Get the latest version data
+        latest_version = remote_ds.data.latestVersion  # type: ignore
+
+        # Handle license information
+        if hasattr(latest_version, "license") and latest_version.license:
+            dataset.license = self.licenses.get(latest_version.license.name)
+        else:
+            # Try to create a custom license from available fields
+            custom_license = CustomLicense(**latest_version)
+            if custom_license.model_dump(exclude_none=True):
+                dataset.license = custom_license
+
+        dataset.p_id = latest_version.datasetPersistentId  # type: ignore
+        blocks = latest_version.metadataBlocks  # type: ignore
+        files = latest_version.files  # type: ignore
 
         # Process metadatablocks and files
         self._construct_block_classes(blocks, dataset)
@@ -554,7 +566,7 @@ class Dataverse(BaseModel):
                 dvtype = node.typeClass
 
                 if dvtype.lower() == "compound":
-                    data[name] = self._process_compound(field.value, tree)
+                    data[name] = self._process_compound(field.value, node)
                 else:
                     data[name] = field.value
             else:
@@ -571,7 +583,7 @@ class Dataverse(BaseModel):
                 self._extract_data(list(entry.values()), tree) for entry in compound
             ]
 
-        return self._extract_data(compound, tree)
+        return self._extract_data(compound.values(), tree)
 
     # ! Importers
     def dataset_from_json(self, handler: IO) -> Dataset:
