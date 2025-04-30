@@ -7,4 +7,4 @@ __all__ = ["Dataset", "Dataverse", "CustomLicense", "License"]
 
 nest_asyncio.apply()
 
-__version__ = "0.4.3"
+__version__ = "0.4.4"
