@@ -1,4 +1,5 @@
 import os
+from pydantic import ValidationError
 import pytest
 from easyDataverse.dataset import Dataset
 
@@ -94,6 +95,59 @@ class TestDatasetCreation:
             assert "some/sub/dir" in file.directory_label, (
                 "File should be in the sub-directory"
             )
+
+    @pytest.mark.integration
+    def test_creation_and_upload_with_dataset_type(
+        self,
+        credentials,
+    ):
+        # Arrange
+        base_url, api_token = credentials
+        dataverse = Dataverse(
+            server_url=base_url,
+            api_token=api_token,
+        )
+
+        # Act
+        dataset = dataverse.create_dataset()
+
+        dataset.dataset_type = "dataset"
+        dataset.citation.title = "My dataset"
+        dataset.citation.subject = ["Other"]
+        dataset.citation.add_author(name="John Doe")
+        dataset.citation.add_ds_description(
+            value="This is a description of the dataset",
+            date="2024",
+        )
+        dataset.citation.add_dataset_contact(
+            name="John Doe",
+            email="john@doe.com",
+        )
+
+        pid = dataset.upload(dataverse_name="root")
+
+        # Re-fetch the dataset
+        dataset = dataverse.load_dataset(pid)
+
+        assert dataset.dataset_type == "dataset"
+
+    @pytest.mark.integration
+    def test_creation_invalid_dataset_type(
+        self,
+        credentials,
+    ):
+        # Arrange
+        base_url, api_token = credentials
+        dataverse = Dataverse(
+            server_url=base_url,
+            api_token=api_token,
+        )
+
+        # Act
+        dataset = dataverse.create_dataset()
+
+        with pytest.raises(ValidationError):
+            dataset.dataset_type = "invalid"
 
     @pytest.mark.integration
     def test_creation_other_license(
@@ -227,6 +281,7 @@ class TestDatasetCreation:
     @staticmethod
     def sort_citation(dataset: Dataset):
         dv_dict = dataset.dataverse_dict()
+        del dv_dict["datasetType"]
         citation = dv_dict["datasetVersion"]["metadataBlocks"]["citation"]
         citation_fields = citation["fields"]
         dv_dict["datasetVersion"]["metadataBlocks"]["citation"]["fields"] = sorted(
