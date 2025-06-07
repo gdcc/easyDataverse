@@ -406,7 +406,6 @@ class Dataverse(BaseModel):
 
         # Fetch and extract data
         remote_ds = self._fetch_dataset(pid, version)
-        rich.print(remote_ds)
 
         # Get the latest version data
         latest_version = remote_ds.data.latestVersion  # type: ignore
