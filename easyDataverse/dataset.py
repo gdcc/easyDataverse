@@ -6,11 +6,12 @@ from typing import Dict, List, Optional, Union
 import nob
 import xmltodict
 import yaml
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 
 from dvuploader import File, add_directory
 
 from easyDataverse.base import DataverseBase
+from easyDataverse.datasettype import DatasetType
 from easyDataverse.license import CustomLicense, License
 from easyDataverse.uploader import update_dataset, upload_to_dataverse
 from easyDataverse.utils import YAMLDumper
@@ -54,8 +55,50 @@ class Dataset(BaseModel):
         description="The files of the dataset.",
     )
 
+    dataset_type: Optional[str] = Field(
+        default=None,
+        description="The type of the dataset.",
+    )
+
     API_TOKEN: Optional[str] = Field(None)
     DATAVERSE_URL: Optional[str] = Field(None)
+
+    # ! Validators
+    @field_validator("dataset_type", mode="after")
+    def _validate_dataset_type(
+        cls,
+        dataset_type: Optional[str],
+        info: ValidationInfo,
+    ) -> Optional[str]:
+        """Validates the dataset type against available types in the Dataverse installation.
+
+        This validator ensures that the provided dataset type is valid and available
+        in the target Dataverse installation. It fetches the available dataset types
+        from the Dataverse instance and validates the provided type against them.
+
+        Note:
+            If dataset_type is None, validation is skipped and None is returned.
+            The DATAVERSE_URL must be set in the model for validation to work.
+        """
+        if dataset_type is None:
+            return dataset_type
+        elif info.data["DATAVERSE_URL"] is None:
+            raise ValueError(
+                "No Dataverse URL has been provided. Please provide a Dataverse URL to validate the dataset type.",
+                "This error should not happen and is likely a bug in the code.",
+                "Please report this issue https://github.com/gdcc/easyDataverse/issues",
+            )
+
+        available_types = DatasetType.from_instance(info.data["DATAVERSE_URL"])  # type: ignore
+        available_names = [type.name for type in available_types]
+
+        if dataset_type not in available_names:
+            raise ValueError(
+                f"Dataset type '{dataset_type}' is not available in the Dataverse installation. "
+                f"Please use 'list_dataset_types' to see which dataset types are available."
+            )
+
+        return dataset_type
 
     # ! Adders
     def add_metadatablock(self, metadatablock: DataverseBase) -> None:
@@ -190,12 +233,23 @@ class Dataset(BaseModel):
         else:
             terms = {}
 
+        dataset_type = self._get_dataset_type()
+
         return {
+            "datasetType": dataset_type,
             "datasetVersion": {
                 "metadataBlocks": blocks,
                 **terms,
-            }
+            },
         }
+
+    def _get_dataset_type(self) -> str:
+        """Returns the dataset type of the dataset."""
+
+        if self.dataset_type is None:
+            return "dataset"
+
+        return self.dataset_type
 
     def dataverse_json(self, indent: int = 2) -> str:
         """Returns a JSON representation of the dataverse dataset."""

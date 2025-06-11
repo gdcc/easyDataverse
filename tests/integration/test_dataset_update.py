@@ -36,7 +36,7 @@ class TestDatasetUpdate:
 
         # Fetch the dataset and update the title
         dataset = dataverse.load_dataset(pid)
-        dataset.citation.title = "Title has changed"
+        dataset.citation.title = "Title has changed"  # type: ignore
         dataset.update()
 
         # Re-fetch the dataset
