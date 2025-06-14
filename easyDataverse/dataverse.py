@@ -1,11 +1,14 @@
+from __future__ import annotations
+
 import asyncio
 from copy import deepcopy
 import json
 from uuid import UUID
-from typing import Callable, Dict, List, Optional, Tuple, IO
+from typing import Callable, Dict, List, Optional, Tuple, IO, Type
 from urllib import parse
 
 import httpx
+from easyDataverse.base import DataverseBase
 from easyDataverse.license import CustomLicense, License
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -62,6 +65,12 @@ class Dataverse(BaseModel):
         description="The native API provided by PyDataverse to use for interacting with the Dataverse installation beyond EasyDataverse.",
     )
 
+    metadatablocks: Dict[str, Type[DataverseBase]] = Field(
+        default_factory=dict,
+        description="The metadatablocks available in the Dataverse installation.",
+        exclude=True,
+    )
+
     _dataset_gen: Callable = PrivateAttr()
     _connected: bool = PrivateAttr(default=False)
 
@@ -86,8 +95,8 @@ class Dataverse(BaseModel):
 
     def __init__(
         self,
-        server_url: HttpUrl,
-        api_token: Optional[UUID4] = None,
+        server_url: str,
+        api_token: Optional[str] = None,
     ):
         super().__init__(
             server_url=server_url,
@@ -209,6 +218,7 @@ class Dataverse(BaseModel):
         block_cls._metadatablock_name = metadatablock.data.name  # type: ignore
 
         dataset.add_metadatablock(block_cls())
+        self.metadatablocks[block_cls.__name__] = block_cls  # type: ignore
 
     def _version_is_compliant(self) -> bool:
         """Checks whether the Dataverse version is 5.13 or above.
