@@ -3,7 +3,7 @@ import types
 import re
 
 from enum import Enum
-from pydantic import AnyHttpUrl, EmailStr, create_model, Field
+from pydantic import EmailStr, create_model, Field
 from pydantic.fields import FieldInfo
 from typing import List, Tuple, Union, Type, Optional, Dict, Callable
 
@@ -11,7 +11,7 @@ from easyDataverse.base import DataverseBase
 
 TYPE_MAPPING = {
     "text": str,
-    "url": AnyHttpUrl,
+    "url": str,
     "float": float,
     "integer": int,
     "int": int,
