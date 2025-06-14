@@ -97,7 +97,7 @@ class Dataverse(BaseModel):
         self._connect()
         self.native_api = NativeApi(
             base_url=str(self.server_url),
-            api_token=str(self.api_token),  # type: ignore
+            api_token=self.api_token,
         )
 
     @computed_field(description="The licenses available in the Dataverse installation.")
@@ -298,6 +298,7 @@ class Dataverse(BaseModel):
         download_files: bool = True,
         filenames: List[str] = [],
         n_parallel_downloads: int = 10,
+        version: Optional[str] = None,
     ) -> Tuple[Dataset, "Dataverse"]:
         """Fetches a dataset and Dataverse specific information from an URL.
 
@@ -321,10 +322,11 @@ class Dataverse(BaseModel):
         parsed_url = parse.urlparse(url)
         p_id = parse.parse_qs(parsed_url.query)["persistentId"][0]
 
-        try:
-            version = parse.parse_qs(parsed_url.query)["version"][0]
-        except KeyError:
-            version = "latest"
+        if version is None:
+            try:
+                version = parse.parse_qs(parsed_url.query)["version"][0]
+            except KeyError:
+                version = "latest"
 
         server_url = parse.urlunparse(
             (parsed_url.scheme, parsed_url.netloc, "", "", "", "")
@@ -512,7 +514,7 @@ class Dataverse(BaseModel):
 
         if version not in versions:
             raise ValueError(
-                f"Version {version} not found. These are the available versions: {versions.keys()}"
+                f"Version {version} not found. These are the available versions: {list(versions.keys())}"
             )
 
         return DottedDict({"data": {"latestVersion": versions[version]}})
