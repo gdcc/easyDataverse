@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 import json
 import os
@@ -11,9 +13,24 @@ import xmltodict
 from anytree import Node, RenderTree, ContRoundStyle
 from enum import Enum
 from pydantic import BaseModel, ConfigDict, PrivateAttr
-from typing import Any, Dict, List, Optional, get_args, get_origin
+from typing import (
+    IO,
+    Any,
+    Dict,
+    List,
+    Optional,
+    Self,
+    Union,
+    get_args,
+    get_origin,
+    TYPE_CHECKING,
+)
 
 from easyDataverse.utils import YAMLDumper
+
+if TYPE_CHECKING:
+    from easyDataverse.llm.extraction import ExtractionConfig
+    from openai import OpenAI
 
 
 class DataverseBase(BaseModel):
@@ -277,7 +294,7 @@ class DataverseBase(BaseModel):
 
         rich.print(
             RenderTree(
-                style=ContRoundStyle(),
+                style=ContRoundStyle(),  # type: ignore
                 node=cls._create_tree(
                     functions=functions,
                     schema=schema,
@@ -349,6 +366,112 @@ class DataverseBase(BaseModel):
                 node.parent = function_root
 
         return root
+
+    # ! LLM Extraction
+    def extract_metadata(
+        self,
+        client: OpenAI,
+        content: Union[str, IO],
+        files: Optional[List[IO]] = None,
+        config: Optional[ExtractionConfig] = None,
+        replace: bool = False,
+    ):
+        """Extracts metadata from content using a Large Language Model.
+
+        This method uses an LLM to analyze the provided content and extract relevant
+        metadata that matches the structure of this DataverseBase object. The extracted
+        metadata is then applied to the current instance.
+
+        Args:
+            client (OpenAI): The OpenAI client instance for making API calls.
+            content (Union[str, IO]): The content to analyze - can be a string or file-like object.
+            config (ExtractionConfig): Configuration object containing extraction parameters
+                such as model name, temperature, and other LLM settings.
+            replace (bool, optional): If True, replaces existing field values with extracted ones.
+                If False, preserves existing non-list values and extends list values.
+                Defaults to False.
+
+        Note:
+            - Fields with None values are skipped during extraction
+            - For list fields, extracted values are extended to existing lists unless replace=True
+            - For non-list fields, existing values are preserved unless replace=True
+            - The extraction uses the class structure to guide the LLM output format
+        """
+
+        from easyDataverse.llm import extract_metadata
+
+        if config is None:
+            config = ExtractionConfig()
+
+        if files is None:
+            files = []
+
+        extracted = extract_metadata(  # type: ignore
+            self.__class__,
+            content=content,
+            client=client,
+            config=config,
+            files=files,
+        )
+
+        for name, value in extracted.model_dump().items():
+            if value is None:
+                continue
+
+            self._apply_extracted_field(name, value, replace)
+
+    def _apply_extracted_field(self, name: str, value, replace: bool):
+        """Apply an extracted field value to the current instance."""
+        dtype = self._get_underlying_type(self.__class__.model_fields[name])
+        current_value = getattr(self, name, None)
+        is_current_list = isinstance(current_value, list)
+        is_value_list = isinstance(value, list)
+
+        # Skip if current field has a value and replace is False
+        if current_value is not None and not is_current_list and not replace:
+            return
+
+        # Handle list fields
+        if is_current_list and is_value_list:
+            processed_value = self._process_list_value(value, dtype)
+            if replace:
+                setattr(self, name, processed_value)
+            else:
+                current_value.extend(processed_value)
+        else:
+            processed_value = self._process_single_value(value, dtype)
+            setattr(self, name, processed_value)
+
+    def _process_list_value(self, value_list, dtype):
+        """Process a list of values, converting to appropriate types if needed."""
+        if dtype is None:
+            return [item for item in value_list]
+
+        if hasattr(dtype, "model_fields"):
+            return [dtype(**item) for item in value_list]
+        else:
+            return [item for item in value_list]
+
+    def _process_single_value(self, value, dtype):
+        """Process a single value, converting to appropriate type if needed."""
+        if dtype is None:
+            return value
+
+        if hasattr(dtype, "model_fields"):
+            return dtype(**value)
+        else:
+            return value
+
+    def _get_underlying_type(self, field: FieldInfo):
+        """Gets the underlying type of a field"""
+
+        origin = get_origin(field.annotation)
+        if origin is list:
+            return get_args(field.annotation)[0]
+        elif origin is Union:
+            return get_args(field.annotation)[0]
+        else:
+            return origin
 
     # ! Template exporter
     @classmethod
