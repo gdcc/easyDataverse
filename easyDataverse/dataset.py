@@ -356,6 +356,20 @@ class Dataset(BaseModel):
 
         return len(results) == 0
 
+    # ! Magic methods
+    def __getitem__(self, key: str):
+        """Access metadatablocks using bracket notation"""
+        if key not in self.metadatablocks:
+            raise KeyError(
+                f"Metadatablock '{key}' is not present in the dataset. "
+                f"Available metadatablocks: {list(self.metadatablocks.keys())}"
+            )
+        return self.metadatablocks[key]
+
+    def __contains__(self, key: str) -> bool:
+        """Check if a metadatablock exists using 'in' operator"""
+        return key in self.metadatablocks
+
     # ! Utilities
     def list_metadatablocks(self, detailed: bool = False):
         """Lists all metadatablocks present in this dataset instance"""
