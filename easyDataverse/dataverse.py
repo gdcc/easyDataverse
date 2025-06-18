@@ -227,6 +227,10 @@ class Dataverse(BaseModel):
             )
 
         major, minor, *_ = response.json()["data"]["version"].split(".")
+        
+        # Remove all the non-numeric parts from the version string to avoid having leading 'v' or other characters.
+        major = "".join(filter(str.isdigit, major))
+        minor = "".join(filter(str.isdigit, minor))
 
         if int(major) >= 6:
             return True
