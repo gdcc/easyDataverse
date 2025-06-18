@@ -34,7 +34,7 @@ def upload_to_dataverse(
         str: The resulting DOI of the dataset, if successful.
     """
 
-    api, _ = _initialize_pydataverse(DATAVERSE_URL, API_TOKEN)
+    api, _ = _initialize_pydataverse(DATAVERSE_URL, API_TOKEN)  # type: ignore
     ds = Dataset()
     ds.from_json(json_data)
 
@@ -50,7 +50,7 @@ def upload_to_dataverse(
     if p_id:
         create_params["pid"] = p_id
 
-    response = api.create_dataset(**create_params)
+    response = api.create_dataset(**create_params)  # type: ignore
     response.raise_for_status()
 
     # Get response data
@@ -58,13 +58,13 @@ def upload_to_dataverse(
 
     _uploadFiles(
         files=files,
-        p_id=p_id,
-        api=api,
+        p_id=p_id,  # type: ignore
+        api=api,  # type: ignore
         n_parallel=n_parallel,
     )  # type: ignore
 
     console = Console()
-    url = urljoin(DATAVERSE_URL, f"dataset.xhtml?persistentId={p_id}")
+    url = urljoin(DATAVERSE_URL, f"dataset.xhtml?persistentId={p_id}")  # type: ignore
     panel = Panel(
         f"🎉 {url}",
         title="Dataset URL",
