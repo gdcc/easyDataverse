@@ -226,17 +226,34 @@ class Dataverse(BaseModel):
                 f"URL '{self.server_url}' is not a valid Dataverse installation. Couldn't find version info."
             )
 
-        major, minor, *_ = response.json()["data"]["version"].split(".")
-        
-        # Remove all the non-numeric parts from the version string to avoid having leading 'v' or other characters.
-        major = "".join(filter(str.isdigit, major))
-        minor = "".join(filter(str.isdigit, minor))
+        version = response.json()["data"]["version"]
+        major, minor = self._extract_major_minor(version)
 
         if int(major) >= 6:
             return True
         elif int(major) >= 5 and int(minor) >= 13:
             return True
 
+        return False
+
+    @staticmethod
+    def _extract_major_minor(version: str) -> Tuple[int, int]:
+        """Extracts the major and minor version numbers from a Dataverse version string."""
+        try:
+            major, minor, *_ = version.split(".")
+            major = "".join(filter(str.isdigit, major))
+            minor = "".join(filter(str.isdigit, minor))
+            return int(major), int(minor)
+        except ValueError:
+            raise ValueError(f"Version '{version}' is not a valid Dataverse version.")
+
+    @staticmethod
+    def _check_version(major: int, minor: int) -> bool:
+        """Checks if the version is compliant."""
+        if int(major) >= 6:
+            return True
+        elif int(major) >= 5 and int(minor) >= 13:
+            return True
         return False
 
     def _fetch_licenses(self) -> Dict[str, License]:
