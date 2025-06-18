@@ -77,3 +77,8 @@ class TestConnection:
             Dataverse(server_url="https://dataverse.harvard.edu")
         except ValueError as e:
             AssertionError("Failed to parse numeric namespace: " + str(e))
+
+    @pytest.mark.integration
+    def test_version_borealis(self):
+        """Tests compatibility with BorealisData, which uses a different versioning scheme."""
+        Dataverse("https://borealisdata.ca/")
