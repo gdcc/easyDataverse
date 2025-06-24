@@ -179,6 +179,9 @@ class TestDatasetDownload:
 
     @staticmethod
     def sort_citation(dataset: Dict):
+        if "datasetType" in dataset:
+            del dataset["datasetType"]
+
         citation = dataset["datasetVersion"]["metadataBlocks"]["citation"]
         citation_fields = citation["fields"]
         dataset["datasetVersion"]["metadataBlocks"]["citation"]["fields"] = sorted(

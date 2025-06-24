@@ -9,8 +9,8 @@ class TestDataverse:
         """Test that an invalid URL raises a ValueError"""
         with pytest.raises(ValueError):
             Dataverse(
-                server_url="not a url",
-                api_token="9eb39a88-ab0d-415d-80c2-32cbafdb5f6f",
+                server_url="not a url",  # type: ignore
+                api_token="9eb39a88-ab0d-415d-80c2-32cbafdb5f6f",  # type: ignore
             )
 
     @pytest.mark.unit
@@ -18,8 +18,8 @@ class TestDataverse:
         """Test that an invalid API token raises a ValueError"""
         with pytest.raises(ValueError):
             Dataverse(
-                server_url="http://localhost:8080",
-                api_token="not a uuid",
+                server_url="http://localhost:8080",  # type: ignore
+                api_token="not a uuid",  # type: ignore
             )
 
     @pytest.mark.unit

@@ -1,11 +1,13 @@
 import asyncio
 from copy import deepcopy
+from functools import cached_property
 import json
 from uuid import UUID
 from typing import Callable, Dict, List, Optional, Tuple, IO
 from urllib import parse
 
 import httpx
+from easyDataverse.datasettype import DatasetType
 from easyDataverse.license import CustomLicense, License
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -111,6 +113,25 @@ class Dataverse(BaseModel):
     def default_license(self) -> License:
         """The default license of the Dataverse installation."""
         return next(filter(lambda x: x.is_default, self.licenses.values()))
+
+    @computed_field(
+        description="The dataset types available in the Dataverse installation."
+    )
+    @cached_property
+    def dataset_types(self) -> Dict[str, DatasetType]:
+        """The dataset types available in the Dataverse installation."""
+        if self.native_api is None:
+            raise ValueError(
+                "Native API is not available. Please connect to a Dataverse installation first."
+            )
+
+        try:
+            return {
+                dataset_type.name: dataset_type
+                for dataset_type in DatasetType.from_instance(self.native_api.base_url)
+            }
+        except ValueError:
+            return {}
 
     def _connect(self) -> None:
         """Connects to a Dataverse installation and adds all metadtablocks as classes.
@@ -299,6 +320,17 @@ class Dataverse(BaseModel):
 
         print("\n")
 
+    def list_dataset_types(self):
+        """Lists the dataset types available in the Dataverse installation."""
+        rich.print("[bold]Dataset Types[/bold]")
+        for dataset_type in self.dataset_types.values():
+            if dataset_type.name == "dataset":
+                print(f"- {dataset_type.name} (default)")
+            else:
+                print(f"- {dataset_type.name}")
+
+        print("\n")
+
     # ! Dataset Handlers
 
     def create_dataset(self) -> Dataset:
@@ -308,7 +340,9 @@ class Dataverse(BaseModel):
         Returns:
             Dataset: The newly created dataset.
         """
-        return self._dataset_gen()
+        dataset = self._dataset_gen()
+        dataset._dataverse = self
+        return dataset
 
     @classmethod
     def load_from_url(
@@ -409,6 +443,7 @@ class Dataverse(BaseModel):
                 dataset.license = custom_license
 
         dataset.p_id = latest_version.datasetPersistentId  # type: ignore
+        dataset.dataset_type = remote_ds.data.get("datasetType", None)  # type: ignore
         blocks = latest_version.metadataBlocks  # type: ignore
         files = latest_version.files  # type: ignore
 
