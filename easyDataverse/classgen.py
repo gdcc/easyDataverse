@@ -122,10 +122,12 @@ def create_compound(
         # Set non-multiple compounds directly as default
         field_meta.default = None
         field_meta.default_factory = sub_cls
-
-    # Create add function
-    fun_name = f"add_{attribute_name}"
-    add_functions[fun_name] = generate_add_function(sub_cls, attribute_name, fun_name)
+    else:
+        # Create add function
+        fun_name = f"add_{attribute_name}"
+        add_functions[fun_name] = generate_add_function(
+            sub_cls, attribute_name, fun_name
+        )
 
     return (dtype, field_meta)
 
