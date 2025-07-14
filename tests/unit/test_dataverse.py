@@ -1,6 +1,7 @@
 import pytest
 
 from easyDataverse.dataverse import Dataverse
+from easyDataverse.utils import extract_major_minor
 
 
 class TestDataverse:
@@ -37,14 +38,14 @@ class TestDataverse:
         ]
 
         for version in cases:
-            major, minor = Dataverse._extract_major_minor(version)
+            major, minor = extract_major_minor(version)
             assert Dataverse._check_version(major, minor)
 
     @pytest.mark.unit
     def test_invalid_version(self):
         """Test that an invalid version raises a ValueError"""
         with pytest.raises(ValueError):
-            Dataverse._extract_major_minor("not a version")
+            extract_major_minor("not a version")
 
     @pytest.mark.unit
     def test_unsupported_version(self):
@@ -56,5 +57,5 @@ class TestDataverse:
             "5.11",
         ]
         for version in cases:
-            major, minor = Dataverse._extract_major_minor(version)
+            major, minor = extract_major_minor(version)
             assert not Dataverse._check_version(major, minor)
