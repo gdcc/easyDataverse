@@ -3,6 +3,7 @@ from urllib.parse import urljoin
 from pydantic import BaseModel, Field
 import httpx
 from pyDataverse.api import NativeApi
+from easyDataverse.utils import extract_major_minor
 
 
 class DatasetType(BaseModel):
@@ -60,5 +61,4 @@ class DatasetType(BaseModel):
         response = native_api.get_info_version()
         response.raise_for_status()
         version = response.json()["data"]["version"]
-        major, minor = version.split(".", 1)
-        return int(major), int(minor)
+        return extract_major_minor(version)

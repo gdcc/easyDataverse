@@ -9,6 +9,7 @@ from urllib import parse
 import httpx
 from easyDataverse.datasettype import DatasetType
 from easyDataverse.license import CustomLicense, License
+from easyDataverse.utils import extract_major_minor
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from anytree import Node, findall_by_attr
@@ -248,7 +249,7 @@ class Dataverse(BaseModel):
             )
 
         version = response.json()["data"]["version"]
-        major, minor = self._extract_major_minor(version)
+        major, minor = extract_major_minor(version)
 
         if int(major) >= 6:
             return True
@@ -256,17 +257,6 @@ class Dataverse(BaseModel):
             return True
 
         return False
-
-    @staticmethod
-    def _extract_major_minor(version: str) -> Tuple[int, int]:
-        """Extracts the major and minor version numbers from a Dataverse version string."""
-        try:
-            major, minor, *_ = version.split(".")
-            major = "".join(filter(str.isdigit, major))
-            minor = "".join(filter(str.isdigit, minor))
-            return int(major), int(minor)
-        except ValueError:
-            raise ValueError(f"Version '{version}' is not a valid Dataverse version.")
 
     @staticmethod
     def _check_version(major: int, minor: int) -> bool:
