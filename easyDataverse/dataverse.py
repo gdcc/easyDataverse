@@ -135,7 +135,7 @@ class Dataverse(BaseModel):
             return {}
 
     def _connect(self) -> None:
-        """Connects to a Dataverse installation and adds all metadtablocks as classes.
+        """Connects to a Dataverse installation and adds all metadatablocks as classes.
 
         You can access each of the given metadatablocks and
         fill these with your metadata by accessing via the
@@ -147,7 +147,7 @@ class Dataverse(BaseModel):
         be accessed the same way as other fields (its just nested)
         or in the case of "multiple" be added via dedicated add-methods.
 
-        dataset.citation.description(text="Description") -> Adds a description
+        dataset.citation.add_ds_description(value="Description") -> Adds a description
 
         Args:
             url (AnyHttpUrl): URL to the Dataverse installation
