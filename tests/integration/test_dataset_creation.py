@@ -97,6 +97,43 @@ class TestDatasetCreation:
             )
 
     @pytest.mark.integration
+    def test_double_upload_raises_error(
+        self,
+        credentials,
+    ):
+        # Arrange
+        base_url, api_token = credentials
+        dataverse = Dataverse(
+            server_url=base_url,
+            api_token=api_token,
+        )
+
+        # Act
+        dataset = dataverse.create_dataset()
+
+        dataset.citation.title = "My dataset"
+        dataset.citation.subject = ["Other"]
+        dataset.citation.add_author(name="John Doe")
+        dataset.citation.add_ds_description(
+            value="This is a description of the dataset",
+            date="2024",
+        )
+        dataset.citation.add_dataset_contact(
+            name="John Doe",
+            email="john@doe.com",
+        )
+
+        dataset.add_directory(
+            dirpath="./tests/fixtures",
+            dv_dir="some/sub/dir",
+        )
+
+        dataset.upload(dataverse_name="root")
+
+        with pytest.raises(ValueError):
+            dataset.upload(dataverse_name="root")
+
+    @pytest.mark.integration
     def test_creation_and_upload_with_dataset_type(
         self,
         credentials,
