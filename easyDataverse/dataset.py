@@ -304,7 +304,8 @@ class Dataset(BaseModel):
         if self.p_id is not None:
             raise ValueError(
                 "It seems like you are trying to upload a dataset that has already been uploaded. Please use the 'update' method instead.",
-                "If you are sure that you want to upload a new version of the dataset, please set the 'p_id' field to 'None'.",
+                "It seems like you are trying to upload a dataset that has already been uploaded. Please use the 'update' method instead.\n"
+                "If you are sure that you want to upload a new version of the dataset, please set the 'p_id' field to 'None'."
             )
 
         self._validate_required_fields()
