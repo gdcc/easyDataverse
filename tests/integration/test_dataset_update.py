@@ -91,7 +91,7 @@ class TestDatasetUpdate:
             api_token=api_token,
         )
 
-        # Fetch the dataset and update the title
+        # Fetch the dataset and update the license
         dataset = dataverse.load_dataset(pid)
         dataset.license = CustomLicense(
             termsOfUse="CHANGED",
@@ -151,7 +151,7 @@ class TestDatasetUpdate:
             api_token=api_token,
         )
 
-        # Fetch the dataset and update the title
+        # Fetch the dataset and update the license
         dataset = dataverse.load_dataset(pid)
         assert isinstance(dataset.license, License), (
             "Dataset license is not a predefined license"
