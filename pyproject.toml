@@ -10,7 +10,7 @@ packages = [{ include = "easyDataverse" }]
 [tool.poetry.dependencies]
 python = "^3.9"
 pydantic = "^2.7.1"
-pydataverse = "^0.3.1"
+pydataverse = "^0.3.5"
 pyaml = "^24.4.0"
 xmltodict = "^0.13.0"
 python-forge = "18.6.0"
