@@ -204,7 +204,7 @@ def _update_license(
         AssertionError: If license is not a License or CustomLicense instance.
         Exception: If the JSON-LD metadata update fails.
     """
-    assert isinstance(license, License) or isinstance(license, CustomLicense), (
+    assert isinstance(license, (License, CustomLicense)), (
         "License must be a License or CustomLicense"
     )
 
@@ -296,6 +296,6 @@ def _update_json_ld_metadata(
     )
 
     if response.status_code != 200:
-        raise Exception(f"Failed to update JSON-LD metadata: {response.text}")
+        raise httpx.HTTPError(f"Failed to update JSON-LD metadata: {response.text}")
 
     return response.json()
