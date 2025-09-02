@@ -2,7 +2,6 @@ from typing import Dict
 
 import pytest
 import httpx
-import rich
 
 from easyDataverse import Dataverse
 from easyDataverse.license import CustomLicense, License

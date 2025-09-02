@@ -1,6 +1,5 @@
 from urllib.parse import urljoin
 import httpx
-import rich
 
 from rich.panel import Panel
 from rich.console import Console
