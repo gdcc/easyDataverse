@@ -28,7 +28,7 @@ class DataverseBase(BaseModel):
 
     # ! Overloads
     def __setattr__(self, name: str, value: Any) -> None:
-        if name in self.model_fields:
+        if name in self.__class__.model_fields:
             self._changed.add(name)
 
         return super().__setattr__(name, value)
@@ -189,7 +189,7 @@ class DataverseBase(BaseModel):
         changed_fields = []
 
         for name in self._changed:
-            field = self.model_fields[name]
+            field = self.__class__.model_fields[name]
 
             if self._is_compound(field) and self._is_multiple(field):
                 value = self._process_multiple_compound(getattr(self, name))
@@ -206,7 +206,7 @@ class DataverseBase(BaseModel):
     def _add_changed_multiples(self):
         """Checks whether a compound has multiple changed fields"""
 
-        for name, field in self.model_fields.items():
+        for name, field in self.__class__.model_fields.items():
             if not self._is_compound(field):
                 continue
             if not self._is_multiple(field):
