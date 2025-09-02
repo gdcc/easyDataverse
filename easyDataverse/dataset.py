@@ -229,7 +229,11 @@ class Dataset(BaseModel):
         if isinstance(self.license, License):
             terms = {"license": self.license.name}
         elif isinstance(self.license, CustomLicense):
-            terms = self.license.model_dump(by_alias=True, exclude={"name"})
+            terms = self.license.model_dump(
+                by_alias=True,
+                exclude={"name"},
+                exclude_none=True,
+            )
         else:
             terms = {}
 
