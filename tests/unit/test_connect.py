@@ -1,8 +1,8 @@
 from enum import Enum
-from typing import List, Optional, Union, get_args
+from typing import List, Optional, Set, Union, get_args
 
 import pytest
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 
 from easyDataverse.classgen import (
     camel_to_snake,
@@ -451,9 +451,11 @@ class TestGenerateAddFuntion:
             name: str
             value: int = 42
             optional: Optional[str] = None
+            _changed: Set = PrivateAttr(default_factory=set)
 
         class ParentClass(BaseModel):
             to_add_to: List[TestClass] = []
+            _changed: Set = PrivateAttr(default_factory=set)
 
         # Act
         result = generate_add_function(
@@ -480,6 +482,7 @@ class TestGenerateAddFuntion:
             "name": str,
             "value": int,
             "optional": Optional[str],
+            "_changed": Set,
         }
 
         expected_object = TestClass(

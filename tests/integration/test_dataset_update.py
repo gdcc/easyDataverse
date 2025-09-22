@@ -63,6 +63,69 @@ class TestDatasetUpdate:
             "The updated dataset title does not match the expected title."
         )
 
+    @pytest.mark.integration
+    def test_dataset_update_with_multiple_fields(
+        self,
+        credentials,
+    ):
+        # Arrange
+        base_url, api_token = credentials
+        dataverse = Dataverse(
+            server_url=base_url,
+            api_token=api_token,
+        )
+
+        # Create a dataset
+        dataset = dataverse.create_dataset()
+        dataset.citation.title = "My dataset"
+        dataset.citation.subject = ["Other"]
+        dataset.citation.add_author(name="John Doe")
+        dataset.citation.add_ds_description(
+            value="This is a description of the dataset",
+            date="2024",
+        )
+        dataset.citation.add_dataset_contact(
+            name="John Doe",
+            email="john@doe.com",
+        )
+
+        pid = dataset.upload("Root")
+
+        # Act
+        # Re-fetch the dataset and add other ID
+        dataset = dataverse.load_dataset(pid)
+        dataset.citation.add_other_id(agency="DOI", value="10.5072/easy-dataverse")
+        dataset.update()
+
+        # Re-fetch the dataset to verify the update
+        url = (
+            f"{base_url}/api/datasets/:persistentId/versions/:draft?persistentId={pid}"
+        )
+
+        response = httpx.get(
+            url,
+            headers={"X-Dataverse-key": api_token},
+        )
+
+        response.raise_for_status()
+        updated_dataset = response.json()
+        other_id_field = next(
+            filter(
+                lambda x: x["typeName"] == "otherId",
+                updated_dataset["data"]["metadataBlocks"]["citation"]["fields"],
+            ),
+            None,
+        )
+
+        # Assert
+        assert other_id_field is not None, "Other ID field should be present"
+        assert len(other_id_field["value"]) > 0, "Other ID field should have values"
+        assert any(
+            item["otherIdAgency"]["value"] == "DOI"
+            and item["otherIdValue"]["value"] == "10.5072/easy-dataverse"
+            for item in other_id_field["value"]
+        ), "The DOI other ID should be present in the updated dataset"
+
     @staticmethod
     def sort_citation(dataset: Dict):
         citation = dataset["datasetVersion"]["metadataBlocks"]["citation"]
