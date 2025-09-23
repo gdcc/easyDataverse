@@ -214,7 +214,10 @@ def generate_add_function(subclass, attribute, name):
     """
 
     def add_fun_template(self, **kwargs):
-        getattr(self, attribute).append(subclass(**kwargs))
+        self._changed.add(attribute)
+        obj = subclass(**kwargs)
+        obj._changed.update(kwargs.keys())
+        getattr(self, attribute).append(obj)
 
     signature = create_function_signature(subclass)
     new_func = forge.sign(forge.self, *signature)(
@@ -245,6 +248,8 @@ def create_function_signature(subclass) -> List:
     """
     signature = []
     for name, dtype in subclass.__annotations__.items():
+        if name == "_changed":
+            continue
         sig_params = {"name": name, "type": dtype, "interface_name": name}
 
         default = subclass.model_fields[name].default
