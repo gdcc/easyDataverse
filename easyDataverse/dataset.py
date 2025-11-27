@@ -336,6 +336,7 @@ class Dataset(BaseModel):
 
         update_dataset(
             to_change=self._extract_changes(),
+            license=self.license,
             p_id=self.p_id,  # type: ignore
             files=self.files,
             DATAVERSE_URL=str(self.DATAVERSE_URL),  # type: ignore

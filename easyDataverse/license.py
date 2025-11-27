@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from urllib import parse
 from pydantic import BaseModel, ConfigDict, Field
 import httpx
@@ -70,6 +70,28 @@ class License(BaseModel):
         except StopIteration:
             raise Exception(f"License '{name}' not found at '{server_url}'")
 
+    def to_json_ld(self):
+        """
+        Convert the license to JSON-LD format.
+
+        Returns:
+            dict: A dictionary containing the license information in JSON-LD format,
+                  with the license URI mapped to the schema:license property.
+        """
+        return {
+            "schema:license": self.uri,
+        }
+
+    @staticmethod
+    def json_ld_field_names() -> List[str]:
+        """
+        Get the JSON-LD field names for the license.
+
+        Returns:
+            List[str]: A list of JSON-LD field names for the license.
+        """
+        return ["schema:license"]
+
 
 class CustomLicense(BaseModel):
     """
@@ -130,3 +152,31 @@ class CustomLicense(BaseModel):
         description="Disclaimer for the dataset.",
         alias="disclaimer",
     )
+
+    def to_json_ld(self):
+        """Convert the custom license to JSON-LD format.
+
+        Returns:
+            dict: A dictionary with keys prefixed with 'dvcore:' containing
+                  the license fields in JSON-LD format, excluding None values.
+        """
+        return {
+            f"dvcore:{k}": v
+            for k, v in self.model_dump(
+                mode="json",
+                exclude_none=True,
+                by_alias=True,
+            ).items()
+        }
+
+    @staticmethod
+    def json_ld_field_names() -> List[str]:
+        """
+        Get the JSON-LD field names for the custom license.
+
+        Returns:
+            List[str]: A list of JSON-LD field names for the custom license.
+        """
+        return [
+            f"dvcore:{field.alias}" for field in CustomLicense.model_fields.values()
+        ]
