@@ -1,7 +1,7 @@
 from typing import Dict
 
-import pytest
 import httpx
+import pytest
 
 from easyDataverse import Dataverse
 from easyDataverse.license import CustomLicense, License

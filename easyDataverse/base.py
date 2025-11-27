@@ -124,7 +124,7 @@ class DataverseBase(BaseModel):
         # Get properties and init json_obj
         json_obj = {}
 
-        for attr, field in self.model_fields.items():
+        for attr, field in self.__class__.model_fields.items():
             if any(name in attr for name in ["add_", "_metadatablock_name"]):
                 # Only necessary for blind fetch
                 continue
